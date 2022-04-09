@@ -6,7 +6,7 @@ import dev.asiglesias.infrastructure.rest.v1.dto.MeasureUnitDTO;
 import dev.asiglesias.infrastructure.rest.v1.dto.ProductDTO;
 import org.mapstruct.Mapper;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface ProductDTOMapper {
 
     ProductDTO toDto(Product product);
