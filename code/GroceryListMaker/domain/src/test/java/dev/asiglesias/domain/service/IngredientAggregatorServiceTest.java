@@ -43,5 +43,4 @@ class IngredientAggregatorServiceTest {
         assertEquals(2, aggregatedTomatoes.get(0).getQuantity());
         assertEquals(product, aggregatedTomatoes.get(0).getProduct());
     }
-
 }
