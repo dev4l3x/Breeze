@@ -22,6 +22,7 @@ import java.net.http.HttpResponse;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -82,14 +83,23 @@ public class NotionHttpClient {
             return StreamSupport.stream(results, false)
                     .map(page -> page.findValue("properties"))
                     .map(pageProperties -> {
+
+                        ArrayNode recipesIds = jsonMapper.createArrayNode();
+
                         ArrayNode dinnerRecipesIds =
                                 pageProperties.get("Dinner").withArray("relation");
                         ArrayNode lunchRecipesIds =
                                 pageProperties.findValue("Lunch").withArray("relation");
 
-                        dinnerRecipesIds.addAll(lunchRecipesIds);
+                        int dinnerMealQuantity =
+                                pageProperties.get("Dinner Quantity").get("number").asInt(1);
+                        int lunchMealQuantity =
+                                pageProperties.get("Lunch Quantity").get("number").asInt(1);
 
-                        return dinnerRecipesIds;
+                        IntStream.range(0, dinnerMealQuantity).forEach((i) -> recipesIds.addAll(dinnerRecipesIds));
+                        IntStream.range(0, lunchMealQuantity).forEach((i) -> recipesIds.addAll(lunchRecipesIds));
+
+                        return recipesIds;
                     })
                     .map(mealRecipeNodes -> {
                         List<String> mealRecipeIds = StreamSupport.stream(mealRecipeNodes.spliterator(), false)
