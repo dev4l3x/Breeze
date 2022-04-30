@@ -31,7 +31,7 @@ public class IngredientAggregatorService {
             final List<MeasureUnit> units = getAllUsedUnits(ingredientsForProduct);
             units.forEach(unit -> {
                 final double quantity = ingredientsForProduct.stream()
-                        .filter(ingredient -> ingredient.getUnit() == unit)
+                        .filter(ingredient -> ingredient.getUnit().equals(unit))
                         .map(Ingredient::getQuantity)
                         .reduce(0d, Double::sum);
 

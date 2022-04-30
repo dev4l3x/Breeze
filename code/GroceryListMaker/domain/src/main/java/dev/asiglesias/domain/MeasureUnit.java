@@ -12,4 +12,9 @@ public class MeasureUnit {
    public static MeasureUnit piece() {
       return new MeasureUnit(PIECE_NAME);
    }
+
+   @Override
+   public String toString() {
+      return unitName.equals(PIECE_NAME) ? "" : unitName;
+   }
 }

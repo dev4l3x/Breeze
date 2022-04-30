@@ -7,3 +7,4 @@ notion.secret=exampleapikey
 notion.baseuri=exampleuri
 notion.mealdbid=
 notion.version
+notion.grocerylistdb

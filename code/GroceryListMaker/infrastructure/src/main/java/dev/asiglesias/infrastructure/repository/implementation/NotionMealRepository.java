@@ -12,11 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import javax.swing.text.html.Option;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.OptionalDouble;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -30,16 +27,26 @@ public class NotionMealRepository implements MealRepository {
     @Override
     public List<Meal> getMeals() {
         List<NotionMeal> meals = notionHttpClient.getMeals();
+
+        //We get the ingredients with distinct here to save request
         Map<String, List<NotionIngredient>> ingredientsByRecipe = meals.stream()
-            .flatMap(meal -> meal.getRecipeIds().stream())
-            .distinct()
+            .flatMap(meal -> meal.getRecipeIds().stream()).distinct()
             .map((recipeId) -> {
                 List<NotionIngredient> ingredients = notionHttpClient.getIngredients(recipeId);
-                return Map.entry(recipeId, ingredients);
+                int multiplyIngredientsBy = numberOfRecipesWithId(meals, recipeId);
+                List<NotionIngredient> allIngredientsNeeded =
+                        Collections.nCopies(multiplyIngredientsBy, ingredients).stream().flatMap(List::stream).collect(Collectors.toList());
+                return Map.entry(recipeId, allIngredientsNeeded);
             })
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
         return mapRecipesToDomainMeals(ingredientsByRecipe);
+    }
+
+    private int numberOfRecipesWithId(List<NotionMeal> meals, String recipeId) {
+        return (int) meals.stream()
+                .flatMap(meal -> meal.getRecipeIds().stream())
+                .filter(recipeId::equals).count();
     }
 
     private List<Meal> mapRecipesToDomainMeals(Map<String, List<NotionIngredient>> ingredientsByRepice) {

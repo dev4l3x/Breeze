@@ -5,8 +5,6 @@ import dev.asiglesias.domain.exception.code.ProductExceptionCode;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -31,5 +29,9 @@ public class Product {
             );
         }
         this.name = name;
+    }
+
+    public String toString() {
+        return this.getName();
     }
 }

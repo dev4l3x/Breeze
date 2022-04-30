@@ -1,6 +1,11 @@
 package dev.asiglesias.infrastructure;
 
+import dev.asiglesias.application.GenerateGroceryListUseCase;
+import dev.asiglesias.application.GenerateGroceryListUseCaseImpl;
 import dev.asiglesias.domain.Meal;
+import dev.asiglesias.domain.repository.GroceryListRepository;
+import dev.asiglesias.domain.repository.MealRepository;
+import dev.asiglesias.domain.service.IngredientAggregatorService;
 import dev.asiglesias.infrastructure.repository.implementation.NotionMealRepository;
 import dev.asiglesias.infrastructure.rest.client.notion.NotionHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +18,14 @@ import java.util.List;
 @SpringBootApplication
 public class Application implements CommandLineRunner {
 
-    @Autowired
-    private NotionMealRepository repository;
+    GenerateGroceryListUseCase generateGroceryListUseCase;
+
+    public Application(MealRepository mealRepository, GroceryListRepository groceryListRepository) {
+        IngredientAggregatorService aggregatorService = new IngredientAggregatorService();
+
+
+        generateGroceryListUseCase = new GenerateGroceryListUseCaseImpl(aggregatorService, mealRepository, groceryListRepository);
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -23,7 +34,6 @@ public class Application implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        List<Meal> meals = repository.getMeals();
-        System.out.println(meals);
+        generateGroceryListUseCase.generate();
     }
 }
