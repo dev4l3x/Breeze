@@ -12,7 +12,6 @@ public class ProductDTO {
 
     private List<String> alternativeNames;
 
-    @NotBlank
     private MeasureUnitDTO preferredUnit;
 
 }

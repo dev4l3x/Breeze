@@ -2,7 +2,7 @@ package dev.asiglesias.infrastructure.configuration;
 
 import dev.asiglesias.application.CreateProductUseCase;
 import dev.asiglesias.application.CreateProductUseCaseImpl;
-import dev.asiglesias.domain.ProductRepository;
+import dev.asiglesias.domain.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

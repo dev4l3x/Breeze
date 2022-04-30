@@ -18,9 +18,9 @@ class IngredientAggregatorServiceTest {
 
     @Test
     void givenIngredientsWithSameProduct_whenAggregate_thenReturnOneProductWithAggregatedQuantities() {
-        Product product = new Product("tomato", Collections.emptyList(), MeasureUnit.PIECE);
-        Ingredient firstTomato = new Ingredient(1, MeasureUnit.PIECE, product);
-        Ingredient secondTomato = new Ingredient(1, MeasureUnit.PIECE, product);
+        Product product = new Product("tomato");
+        Ingredient firstTomato = Ingredient.builder().quantity(1).unit(MeasureUnit.piece()).product(product).build();
+        Ingredient secondTomato = Ingredient.builder().quantity(1).unit(MeasureUnit.piece()).product(product).build();
 
         List<Ingredient> aggregatedTomatoes = aggregatorService.aggregate(List.of(firstTomato, secondTomato));
 
@@ -31,10 +31,11 @@ class IngredientAggregatorServiceTest {
 
     @Test
     void givenIngredientsWithSameProductButDifferentUnit_whenAggregate_thenOnlyAggregateSameUnit() {
-        Product product = new Product("tomato", Collections.emptyList(), MeasureUnit.PIECE);
-        Ingredient firstTomato = new Ingredient(1, MeasureUnit.PIECE, product);
-        Ingredient secondTomato = new Ingredient(1, MeasureUnit.PIECE, product);
-        Ingredient tomatoWithDifferentUnit = new Ingredient(100, MeasureUnit.GRAMS, product);
+        Product product = new Product("tomato");
+        Ingredient firstTomato = Ingredient.builder().quantity(1).unit(MeasureUnit.piece()).product(product).build();
+        Ingredient secondTomato = Ingredient.builder().quantity(1).unit(MeasureUnit.piece()).product(product).build();
+        Ingredient tomatoWithDifferentUnit = Ingredient.builder()
+                .quantity(100).unit(new MeasureUnit("g")).product(product).build();
 
         List<Ingredient> aggregatedTomatoes =
                 aggregatorService.aggregate(List.of(firstTomato, secondTomato, tomatoWithDifferentUnit));

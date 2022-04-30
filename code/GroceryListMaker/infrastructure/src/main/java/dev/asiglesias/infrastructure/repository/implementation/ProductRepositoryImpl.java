@@ -1,7 +1,7 @@
 package dev.asiglesias.infrastructure.repository.implementation;
 
 import dev.asiglesias.domain.Product;
-import dev.asiglesias.domain.ProductRepository;
+import dev.asiglesias.domain.repository.ProductRepository;
 import dev.asiglesias.infrastructure.entity.mongo.ProductEntity;
 import dev.asiglesias.infrastructure.mappers.entity.ProductEntityMapper;
 import dev.asiglesias.infrastructure.repository.mongo.ProductMongoRepository;

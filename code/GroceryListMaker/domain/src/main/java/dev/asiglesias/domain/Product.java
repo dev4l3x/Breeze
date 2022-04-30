@@ -2,8 +2,7 @@ package dev.asiglesias.domain;
 
 import dev.asiglesias.domain.exception.ProductException;
 import dev.asiglesias.domain.exception.code.ProductExceptionCode;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;
@@ -11,18 +10,13 @@ import java.util.List;
 import java.util.Objects;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Builder
 public class Product {
 
     @EqualsAndHashCode.Include private String name;
 
-    private List<String> alternativeNames;
-
-    private MeasureUnit preferredUnit;
-
-    public Product(String name, List<String> alternativeNames, MeasureUnit preferredUnit) {
+    public Product(String name) {
         setName(name);
-        setAlternativeNames(alternativeNames);
-        setPreferredUnit(preferredUnit);
     }
 
     public String getName() {
@@ -37,25 +31,5 @@ public class Product {
             );
         }
         this.name = name;
-    }
-
-    public List<String> getAlternativeNames() {
-        return List.copyOf(alternativeNames);
-    }
-
-    public void setAlternativeNames(List<String> alternativeNames) {
-        if (alternativeNames == null) {
-            this.alternativeNames = new ArrayList<>();
-            return;
-        }
-        this.alternativeNames = alternativeNames;
-    }
-
-    public MeasureUnit getPreferredUnit() {
-        return preferredUnit;
-    }
-
-    public void setPreferredUnit(MeasureUnit preferredUnit) {
-        this.preferredUnit = preferredUnit;
     }
 }
