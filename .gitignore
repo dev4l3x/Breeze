@@ -9,7 +9,7 @@
 **/.DS_Store
 **/.idea
 
-**/application.properties
+./**/application.properties
 
 # User-specific stuff
 .idea/**/workspace.xml
