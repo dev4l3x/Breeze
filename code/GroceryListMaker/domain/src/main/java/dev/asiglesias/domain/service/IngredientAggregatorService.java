@@ -1,52 +1,49 @@
 package dev.asiglesias.domain.service;
 
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
-
 import dev.asiglesias.domain.Ingredient;
 import dev.asiglesias.domain.MeasureUnit;
 import dev.asiglesias.domain.Product;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class IngredientAggregatorService {
 
     public List<Ingredient> aggregate(List<Ingredient> ingredients) {
-        Map<Product, List<Ingredient>> ingredientsGroupedByProduct = ingredients.stream()
+        List<Product> allProducts = getAllProductsFromIngredients(ingredients);
+
+        return allProducts.stream()
+                .flatMap((product -> aggregateIngredients(product, ingredients).stream()))
+                .collect(Collectors.toList());
+    }
+
+    //It's a list because ingredients could have different units, so we only aggregate same units
+    private List<Ingredient> aggregateIngredients(Product product, List<Ingredient> ingredients) {
+        final List<Ingredient> ingredientsForProduct = ingredients.stream()
+                .filter(ingredient -> ingredient.getProduct().equals(product))
+                .collect(Collectors.toList());
+
+        final List<MeasureUnit> units = getAllUsedUnits(ingredientsForProduct);
+
+        return units.stream().map(unit -> {
+            final double aggregatedQuantity = sumIngredientQuantityWithUnit(ingredientsForProduct, unit);
+            return Ingredient.builder()
+                    .unit(unit).product(product).quantity(aggregatedQuantity).build();
+        }).collect(Collectors.toList());
+    }
+
+    private double sumIngredientQuantityWithUnit(List<Ingredient> ingredients, MeasureUnit unit) {
+        return ingredients.stream()
+                .filter(ingredient -> ingredient.getUnit().equals(unit))
+                .map(Ingredient::getQuantity)
+                .reduce(0d, Double::sum);
+    }
+
+    private List<Product> getAllProductsFromIngredients(List<Ingredient> ingredients) {
+        return ingredients.stream()
                 .map(Ingredient::getProduct)
                 .distinct()
-                .collect(Collectors.toUnmodifiableMap(
-                        (product -> product),
-                        (product -> ingredients.stream()
-                                .filter((ingredient -> ingredient.getProduct().equals(product))).collect(Collectors.toList()))
-                ));
-
-
-        List<Ingredient> aggregatedIngredients = new ArrayList<>(ingredientsGroupedByProduct.size());
-
-        ingredientsGroupedByProduct.forEach((product, ingredientsForProduct) -> {
-            final List<MeasureUnit> units = getAllUsedUnits(ingredientsForProduct);
-            units.forEach(unit -> {
-                final double quantity = ingredientsForProduct.stream()
-                        .filter(ingredient -> ingredient.getUnit().equals(unit))
-                        .map(Ingredient::getQuantity)
-                        .reduce(0d, Double::sum);
-
-                aggregatedIngredients.add(
-                        Ingredient.builder()
-                                .quantity(quantity)
-                                .unit(unit)
-                                .product(product)
-                                .build()
-                );
-            });
-
-        });
-
-        return aggregatedIngredients;
+                .collect(Collectors.toList());
     }
 
     private List<MeasureUnit> getAllUsedUnits(List<Ingredient> ingredients) {

@@ -1,8 +1,4 @@
-spring.data.mongodb.host=localhost
-spring.data.mongodb.port=27017
-spring.data.mongodb.username=root
-spring.data.mongodb.password=password
-spring.data.mongodb.database=grocerymaker
+server.port=${PORT:80}
 notion.secret=exampleapikey
 notion.baseuri=exampleuri
 notion.mealdbid=
