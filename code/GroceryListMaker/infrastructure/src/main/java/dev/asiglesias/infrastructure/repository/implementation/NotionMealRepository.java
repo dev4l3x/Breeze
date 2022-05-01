@@ -11,7 +11,6 @@ import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionMeal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import javax.swing.text.html.Option;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -27,6 +26,10 @@ public class NotionMealRepository implements MealRepository {
     @Override
     public List<Meal> getMeals() {
         List<NotionMeal> meals = notionHttpClient.getMeals();
+
+        if (Objects.isNull(meals)) {
+            return Collections.emptyList();
+        }
 
         //We get the ingredients with distinct here to save request
         Map<String, List<NotionIngredient>> ingredientsByRecipe = meals.stream()
@@ -53,6 +56,7 @@ public class NotionMealRepository implements MealRepository {
         return ingredientsByRepice.values().stream()
             .map((ingredients) ->
                     ingredients.stream()
+                            .filter(ingredient -> Objects.nonNull(ingredient.getName()) && !ingredient.getName().isBlank())
                             .map(this::getIngredientFromNotionIngredient)
                             .collect(Collectors.toList())
             )
@@ -71,12 +75,18 @@ public class NotionMealRepository implements MealRepository {
     }
 
     private OptionalDouble getQuantityAsNumber(String quantity) {
+        if (Objects.isNull(quantity)) {
+            return OptionalDouble.empty();
+        }
         String unitToRemove = getUnitFromQuantity(quantity).orElse("");
         String quantityWithoutUnit = quantity.replace(unitToRemove, "");
         return quantity.isBlank() ? OptionalDouble.empty() : OptionalDouble.of(Double.parseDouble(quantityWithoutUnit));
     }
 
     private Optional<String> getUnitFromQuantity(String quantity) {
+        if (Objects.isNull(quantity)) {
+            return Optional.empty();
+        }
         Pattern unitPattern = Pattern.compile("([a-zA-Z]+)");
         Matcher m = unitPattern.matcher(quantity);
         return m.find() ? Optional.ofNullable(m.group(0)) : Optional.empty();
