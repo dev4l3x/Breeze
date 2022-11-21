@@ -26,10 +26,16 @@ public class SecurityConfiguration {
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests((requests) -> requests.antMatchers("/register")
-                .permitAll().anyRequest().authenticated());
+        httpSecurity
+                .cors().disable()
+                .csrf().disable();
+        httpSecurity
+                .authorizeHttpRequests((request) ->
+                        request.antMatchers("/signup").permitAll())
+                .authorizeHttpRequests()
+                .anyRequest().authenticated().and()
+                .httpBasic();
 
-        httpSecurity.cors().and().csrf().disable();
         return httpSecurity.build();
     }
 

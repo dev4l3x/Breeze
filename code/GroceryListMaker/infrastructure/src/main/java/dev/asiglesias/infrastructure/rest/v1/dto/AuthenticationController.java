@@ -4,10 +4,12 @@ import dev.asiglesias.infrastructure.repositories.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.JdbcUserDetailsManager;
+import org.springframework.security.provisioning.UserDetailsManager;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,15 +22,22 @@ public class AuthenticationController {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final JdbcUserDetailsManager userDetailsManager;
+    private final UserDetailsManager userDetailsManager;
 
-    @PostMapping("login")
+    @PostMapping("signin")
     public ResponseEntity<Void> login() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @PostMapping("register")
+    @PostMapping("signup")
     public ResponseEntity<Void> register(@RequestBody UserDTO userToCreate) {
+
+        boolean existsUser = userDetailsManager.userExists(userToCreate.username());
+
+        if (existsUser) {
+            throw new AuthenticationServiceException("Username already exists");
+        }
+
         UserDetails user = User.builder()
                 .username(userToCreate.username())
                 .password(passwordEncoder.encode(userToCreate.password()))
@@ -36,6 +45,11 @@ public class AuthenticationController {
                 .build();
         userDetailsManager.createUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("test")
+    public ResponseEntity<Void> testAuthentication() {
+        return ResponseEntity.ok().build();
     }
 
 }
