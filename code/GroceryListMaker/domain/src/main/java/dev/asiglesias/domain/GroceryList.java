@@ -10,7 +10,6 @@ import java.util.Objects;
 @Data
 @AllArgsConstructor
 public class GroceryList {
-    User user;
 
     OffsetDateTime createdAt;
 

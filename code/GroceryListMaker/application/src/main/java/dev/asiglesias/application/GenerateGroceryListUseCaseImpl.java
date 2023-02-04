@@ -24,7 +24,6 @@ public class GenerateGroceryListUseCaseImpl implements GenerateGroceryListUseCas
 
     @Override
     public void generateForUser(User user) {
-
         List<Meal> mealsForUser = mealRepository.getMealsForUser(user);
 
         List<Ingredient> allIngredients = mealsForUser.stream()
@@ -33,8 +32,8 @@ public class GenerateGroceryListUseCaseImpl implements GenerateGroceryListUseCas
 
         List<Ingredient> aggregatedIngredients = aggregatorService.aggregate(allIngredients);
 
-        GroceryList list = new GroceryList(user, OffsetDateTime.now(), aggregatedIngredients);
+        GroceryList list = new GroceryList(OffsetDateTime.now(), aggregatedIngredients);
 
-        groceryListRepository.createForUser(list);
+        groceryListRepository.createForUser(list, user);
     }
 }

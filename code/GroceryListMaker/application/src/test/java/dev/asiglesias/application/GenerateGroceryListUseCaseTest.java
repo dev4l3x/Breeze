@@ -1,14 +1,12 @@
 package dev.asiglesias.application;
 
-import dev.asiglesias.domain.Ingredient;
-import dev.asiglesias.domain.Meal;
-import dev.asiglesias.domain.MeasureUnit;
-import dev.asiglesias.domain.Product;
+import dev.asiglesias.domain.*;
 import dev.asiglesias.domain.repository.GroceryListRepository;
 import dev.asiglesias.domain.repository.MealRepository;
 import dev.asiglesias.domain.service.IngredientAggregatorService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,8 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.argThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,18 +48,23 @@ class GenerateGroceryListUseCaseTest {
         Meal mealWithOneTomato = new Meal(Collections.singletonList(oneTomato));
         Meal mealWithTwoTomatoes = new Meal(Collections.singletonList(twoTomatoes));
 
-        when(mealRepository.getMealsForUser(null)).thenReturn(List.of(mealWithOneTomato, mealWithTwoTomatoes));
+        User user = new User("test");
+
+        when(mealRepository.getMealsForUser(user)).thenReturn(List.of(mealWithOneTomato, mealWithTwoTomatoes));
         when(aggregatorService.aggregate(anyList())).thenReturn(List.of(aggregatedTomato));
 
         //Act
-        useCase.generateForUser(null);
+        useCase.generateForUser(user);
 
         //Assert
-        verify(mealRepository).getMealsForUser(null);
+        verify(mealRepository).getMealsForUser(user);
         verify(aggregatorService).aggregate(
                argThat(ingredients -> ingredients.contains(oneTomato) && ingredients.contains(twoTomatoes))
         );
-        verify(groceryListRepository).createForUser(null);
+        ArgumentCaptor<GroceryList> groceryListCaptor = ArgumentCaptor.forClass(GroceryList.class);
+        verify(groceryListRepository).createForUser(groceryListCaptor.capture(), eq(user));
+        GroceryList groceryList = groceryListCaptor.getValue();
+        assertThat(groceryList.getIngredients()).containsOnly(aggregatedTomato);
     }
 
 }
