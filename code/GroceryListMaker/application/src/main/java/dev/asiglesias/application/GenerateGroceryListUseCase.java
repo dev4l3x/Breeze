@@ -1,10 +1,7 @@
 package dev.asiglesias.application;
 
-import dev.asiglesias.domain.Ingredient;
-import dev.asiglesias.domain.Meal;
-
-import java.util.List;
+import dev.asiglesias.domain.User;
 
 public interface GenerateGroceryListUseCase {
-    void generate();
+    void generateForUser(User user);
 }

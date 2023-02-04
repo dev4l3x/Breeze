@@ -1,9 +1,6 @@
 package dev.asiglesias.infrastructure.repository.implementation;
 
-import dev.asiglesias.domain.Ingredient;
-import dev.asiglesias.domain.Meal;
-import dev.asiglesias.domain.MeasureUnit;
-import dev.asiglesias.domain.Product;
+import dev.asiglesias.domain.*;
 import dev.asiglesias.domain.repository.MealRepository;
 import dev.asiglesias.infrastructure.rest.client.notion.NotionHttpClient;
 import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionIngredient;
@@ -24,7 +21,7 @@ public class NotionMealRepository implements MealRepository {
     private final NotionHttpClient notionHttpClient;
 
     @Override
-    public List<Meal> getMeals() {
+    public List<Meal> getMealsForUser(User user) {
         List<NotionMeal> meals = notionHttpClient.getMeals();
 
         if (Objects.isNull(meals)) {

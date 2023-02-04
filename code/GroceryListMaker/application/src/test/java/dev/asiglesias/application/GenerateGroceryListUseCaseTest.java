@@ -9,7 +9,6 @@ import dev.asiglesias.domain.repository.MealRepository;
 import dev.asiglesias.domain.service.IngredientAggregatorService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
@@ -52,18 +50,18 @@ class GenerateGroceryListUseCaseTest {
         Meal mealWithOneTomato = new Meal(Collections.singletonList(oneTomato));
         Meal mealWithTwoTomatoes = new Meal(Collections.singletonList(twoTomatoes));
 
-        when(mealRepository.getMeals()).thenReturn(List.of(mealWithOneTomato, mealWithTwoTomatoes));
+        when(mealRepository.getMealsForUser(null)).thenReturn(List.of(mealWithOneTomato, mealWithTwoTomatoes));
         when(aggregatorService.aggregate(anyList())).thenReturn(List.of(aggregatedTomato));
 
         //Act
-        useCase.generate();
+        useCase.generateForUser(null);
 
         //Assert
-        verify(mealRepository).getMeals();
+        verify(mealRepository).getMealsForUser(null);
         verify(aggregatorService).aggregate(
                argThat(ingredients -> ingredients.contains(oneTomato) && ingredients.contains(twoTomatoes))
         );
-        verify(groceryListRepository).create(argThat(list -> list.contains(aggregatedTomato)));
+        verify(groceryListRepository).createForUser(null);
     }
 
 }

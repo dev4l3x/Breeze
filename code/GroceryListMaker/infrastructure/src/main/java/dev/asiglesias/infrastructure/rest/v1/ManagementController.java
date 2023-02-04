@@ -25,7 +25,7 @@ public class ManagementController {
 
     @PostMapping("generate")
     public ResponseEntity<Void> generate() {
-        generateGroceryListUseCase.generate();
+        generateGroceryListUseCase.generateForUser(null);
         return ResponseEntity.noContent().build();
     }
 }

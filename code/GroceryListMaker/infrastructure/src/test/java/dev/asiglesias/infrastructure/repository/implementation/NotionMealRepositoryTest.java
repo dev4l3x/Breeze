@@ -33,7 +33,7 @@ class NotionMealRepositoryTest {
     @Test
     void whenGetMeals_AlwaysCallsNotionHttpClient() {
         //Act
-        mealRepository.getMeals();
+        mealRepository.getMealsForUser(null);
 
         //Assert
         verify(httpClient).getMeals();
@@ -45,7 +45,7 @@ class NotionMealRepositoryTest {
         when(httpClient.getMeals()).thenReturn(null);
 
         //Act
-        List<Meal> meals = mealRepository.getMeals();
+        List<Meal> meals = mealRepository.getMealsForUser(null);
 
         //Assert
         assertThat(meals).isEmpty();
@@ -57,7 +57,7 @@ class NotionMealRepositoryTest {
         when(httpClient.getMeals()).thenReturn(Collections.emptyList());
 
         //Act
-        List<Meal> meals = mealRepository.getMeals();
+        List<Meal> meals = mealRepository.getMealsForUser(null);
 
         //Assert
         assertThat(meals).isEmpty();
@@ -74,7 +74,7 @@ class NotionMealRepositoryTest {
                 .thenReturn(List.of(new NotionIngredient("120g", "Rice")));
 
         //Act
-        List<Meal> meals = mealRepository.getMeals();
+        List<Meal> meals = mealRepository.getMealsForUser(null);
 
         //Assert
         assertThat(meals).isNotEmpty().hasSize(2);
@@ -98,7 +98,7 @@ class NotionMealRepositoryTest {
                 .thenReturn(List.of(new NotionIngredient(null, "Rice")));
 
         //Act
-        List<Meal> meals = mealRepository.getMeals();
+        List<Meal> meals = mealRepository.getMealsForUser(null);
 
         //Assert
         assertThat(meals).isNotEmpty().hasSize(1);
@@ -125,7 +125,7 @@ class NotionMealRepositoryTest {
                 ));
 
         //Act
-        List<Meal> meals = mealRepository.getMeals();
+        List<Meal> meals = mealRepository.getMealsForUser(null);
 
         //Assert
         assertThat(meals).isNotEmpty().hasSize(1);
@@ -146,7 +146,7 @@ class NotionMealRepositoryTest {
                 .thenReturn(List.of(new NotionIngredient("120", "Rice")));
 
         //Act
-        List<Meal> meals = mealRepository.getMeals();
+        List<Meal> meals = mealRepository.getMealsForUser(null);
 
         //Assert
         assertThat(meals).isNotEmpty().hasSize(1);
@@ -165,7 +165,7 @@ class NotionMealRepositoryTest {
         when(httpClient.getMeals()).thenReturn(List.of(notionMeal));
 
         //Act
-        List<Meal> meals = mealRepository.getMeals();
+        List<Meal> meals = mealRepository.getMealsForUser(null);
 
         //Assert
         verify(httpClient, never()).getIngredients(anyString());

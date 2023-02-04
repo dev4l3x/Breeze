@@ -1,5 +1,6 @@
 package dev.asiglesias.infrastructure.repository.implementation;
 
+import dev.asiglesias.domain.GroceryList;
 import dev.asiglesias.domain.Ingredient;
 import dev.asiglesias.domain.repository.GroceryListRepository;
 import dev.asiglesias.infrastructure.rest.client.notion.NotionHttpClient;
@@ -9,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Repository
@@ -20,14 +20,14 @@ public class NotionGroceryListRepository implements GroceryListRepository {
     private final NotionHttpClient httpClient;
 
     @Override
-    public void create(List<Ingredient> ingredients) {
+    public void createForUser(GroceryList groceryList) {
 
-        if (Objects.isNull(ingredients) || ingredients.isEmpty()) {
-            log.error("Not saving grocery list because ingredients is null or empty");
+        if (!groceryList.hasIngredients()) {
+            log.warn("Not saving grocery list because ingredients is null or empty");
             return;
         }
 
-        List<String> ingredientsToSave = ingredients.stream()
+        List<String> ingredientsToSave = groceryList.getIngredients().stream()
                 .map(Ingredient::toString)
                 .collect(Collectors.toList());
 
