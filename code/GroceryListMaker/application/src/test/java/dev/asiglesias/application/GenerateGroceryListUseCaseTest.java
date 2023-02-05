@@ -48,7 +48,7 @@ class GenerateGroceryListUseCaseTest {
         Meal mealWithOneTomato = new Meal(Collections.singletonList(oneTomato));
         Meal mealWithTwoTomatoes = new Meal(Collections.singletonList(twoTomatoes));
 
-        User user = new User("test");
+        User user = new User("test", "teest");
 
         when(mealRepository.getMealsForUser(user)).thenReturn(List.of(mealWithOneTomato, mealWithTwoTomatoes));
         when(aggregatorService.aggregate(anyList())).thenReturn(List.of(aggregatedTomato));

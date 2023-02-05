@@ -1,4 +1,4 @@
-package dev.asiglesias.domain.service;
+package dev.asiglesias.application.auth.services;
 
 public interface EncryptionService {
 

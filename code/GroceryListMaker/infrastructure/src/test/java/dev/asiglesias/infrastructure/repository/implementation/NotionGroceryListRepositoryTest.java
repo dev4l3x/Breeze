@@ -37,7 +37,7 @@ class NotionGroceryListRepositoryTest {
         List<Ingredient> ingredients = List.of(ingredient);
 
         //Act
-        notionGroceryListRepository.createForUser(null);
+        notionGroceryListRepository.createForUser(null, null);
 
         //Assert
         verify(httpClient).createGroceryListPage(
@@ -51,7 +51,7 @@ class NotionGroceryListRepositoryTest {
         List<Ingredient> ingredients = null;
 
         //Act
-        notionGroceryListRepository.createForUser(null);
+        notionGroceryListRepository.createForUser(null, null);
 
         //Assert
         verify(httpClient, never()).createGroceryListPage(any());
@@ -63,7 +63,7 @@ class NotionGroceryListRepositoryTest {
         List<Ingredient> ingredients = Collections.emptyList();
 
         //Act
-        notionGroceryListRepository.createForUser(null);
+        notionGroceryListRepository.createForUser(null, null);
 
         //Assert
         verify(httpClient, never()).createGroceryListPage(any());

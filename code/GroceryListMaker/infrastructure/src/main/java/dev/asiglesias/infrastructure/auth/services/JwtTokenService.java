@@ -1,5 +1,6 @@
-package dev.asiglesias.infrastructure.service.auth;
+package dev.asiglesias.infrastructure.auth.services;
 
+import dev.asiglesias.application.auth.services.TokenService;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +12,7 @@ import java.util.Date;
 
 @Service
 @Slf4j
-public class TokenService {
+public class JwtTokenService implements TokenService {
 
     public static final String HMAC_SHA_256 = "HmacSHA256";
 

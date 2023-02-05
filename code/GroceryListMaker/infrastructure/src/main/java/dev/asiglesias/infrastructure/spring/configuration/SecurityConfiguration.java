@@ -1,6 +1,6 @@
 package dev.asiglesias.infrastructure.spring.configuration;
 
-import dev.asiglesias.infrastructure.service.auth.TokenService;
+import dev.asiglesias.infrastructure.auth.services.JwtTokenService;
 import dev.asiglesias.infrastructure.spring.filters.JwtTokenAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,13 +26,13 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity httpSecurity, TokenService tokenService) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity httpSecurity, JwtTokenService tokenService) throws Exception {
         httpSecurity
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .cors().disable()
                 .csrf().disable();
         httpSecurity.authorizeRequests()
-                .antMatchers("/signup").permitAll()
+                .antMatchers("/signup", "/signin").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JwtTokenAuthenticationFilter(tokenService), BasicAuthenticationFilter.class)
