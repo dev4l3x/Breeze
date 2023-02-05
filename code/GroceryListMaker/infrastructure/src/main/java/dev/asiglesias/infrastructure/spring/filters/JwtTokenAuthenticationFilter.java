@@ -3,6 +3,7 @@ package dev.asiglesias.infrastructure.spring.filters;
 import dev.asiglesias.infrastructure.auth.services.JwtTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -11,6 +12,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -40,7 +42,8 @@ public class JwtTokenAuthenticationFilter implements Filter {
 
         if (token.isPresent() && !token.get().isBlank() && service.isValid(token.get())) {
             String username = service.getUser(token.get());
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null);
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null,
+                    List.of(new SimpleGrantedAuthority("USER")));
             SecurityContextHolder.createEmptyContext();
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
