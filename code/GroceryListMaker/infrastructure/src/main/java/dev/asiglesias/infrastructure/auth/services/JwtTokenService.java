@@ -19,7 +19,7 @@ public class JwtTokenService implements TokenService {
     @Value("${app.security.jwt.secret}")
     private String secret;
 
-    public String createTokenForUser(String user) {
+    public String createTokenForUsername(String user) {
         Key key = new SecretKeySpec(secret.getBytes(), 0, secret.length(), HMAC_SHA_256);
         return Jwts.builder()
                 .setSubject(user)

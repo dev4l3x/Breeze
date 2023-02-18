@@ -4,6 +4,7 @@ import dev.asiglesias.application.auth.models.UserDataContainer;
 import dev.asiglesias.application.auth.repositories.UserRepository;
 import dev.asiglesias.application.auth.services.EncryptionService;
 import dev.asiglesias.application.auth.services.TokenService;
+import dev.asiglesias.application.exceptions.InvalidParameterException;
 import dev.asiglesias.domain.User;
 import lombok.RequiredArgsConstructor;
 
@@ -20,19 +21,28 @@ public class SignInUserUseCaseImpl implements SignInUserUseCase {
 
     @Override
     public String signIn(UserDataContainer userDataContainer) {
+
+        if (userDataContainer == null
+                ||userDataContainer.getUsername() == null
+                || userDataContainer.getUsername().isBlank()
+                || userDataContainer.getPassword() == null
+                || userDataContainer.getPassword().isBlank()) {
+            throw new InvalidParameterException("User must have username and password");
+        }
+
         Optional<User> user = userRepository.findByUsername(userDataContainer.getUsername());
 
         if (user.isEmpty()) {
-            throw new RuntimeException("Username not found");
+            throw new InvalidParameterException("Username not found");
         }
 
         String encryptedPassword = encryptionService.encrypt(userDataContainer.getPassword());
 
         if (!encryptedPassword.equals(user.get().getPassword())) {
-            throw new RuntimeException("Invalid password");
+            throw new InvalidParameterException("Invalid password");
         }
 
-        return tokenService.createTokenForUser(user.get().getUsername());
+        return tokenService.createTokenForUsername(user.get().getUsername());
 
     }
 }
