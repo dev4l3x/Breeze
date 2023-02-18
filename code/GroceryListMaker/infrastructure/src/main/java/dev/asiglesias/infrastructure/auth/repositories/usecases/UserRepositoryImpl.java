@@ -15,11 +15,11 @@ public class UserRepositoryImpl implements UserRepository {
     private final UserMongoRepository userMongoRepository;
 
     @Override
-    public User createUser(User user, String password) {
+    public User createUser(User user) {
         dev.asiglesias.infrastructure.auth.entitites.User userToCreate =
                 new dev.asiglesias.infrastructure.auth.entitites.User();
         userToCreate.setUsername(user.getUsername());
-        userToCreate.setPassword(password);
+        userToCreate.setPassword(user.getPassword());
         userToCreate.setEnabled(true);
 
         userMongoRepository.insert(userToCreate);

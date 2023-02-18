@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface UserRepository {
 
-    User createUser(User user, String password);
+    User createUser(User user);
 
     boolean existsUsername(String username);
 

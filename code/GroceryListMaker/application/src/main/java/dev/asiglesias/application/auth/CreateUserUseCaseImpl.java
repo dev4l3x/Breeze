@@ -3,6 +3,7 @@ package dev.asiglesias.application.auth;
 import dev.asiglesias.application.auth.models.UserDataContainer;
 import dev.asiglesias.application.auth.repositories.UserRepository;
 import dev.asiglesias.application.auth.services.EncryptionService;
+import dev.asiglesias.application.exceptions.InvalidParameterException;
 import dev.asiglesias.domain.User;
 import lombok.RequiredArgsConstructor;
 
@@ -16,13 +17,21 @@ public class CreateUserUseCaseImpl implements CreateUserUseCase {
     @Override
     public void createUser(UserDataContainer userDataContainer) {
 
-        if (userRepository.existsUsername(userDataContainer.getUsername())) {
-            throw new RuntimeException();
+        if (userDataContainer == null
+                ||userDataContainer.getUsername() == null
+                || userDataContainer.getUsername().isBlank()
+                || userDataContainer.getPassword() == null
+                || userDataContainer.getPassword().isBlank()) {
+            throw new InvalidParameterException("User must have username and password");
         }
 
-        User user = new User(userDataContainer.getUsername(), userDataContainer.getPassword());
-        String encryptedPassword = encryptionService.encrypt(userDataContainer.getPassword());
+        if (userRepository.existsUsername(userDataContainer.getUsername())) {
+            throw new InvalidParameterException("User already exists");
+        }
 
-        userRepository.createUser(user, encryptedPassword);
+        String encryptedPassword = encryptionService.encrypt(userDataContainer.getPassword());
+        User user = new User(userDataContainer.getUsername(), encryptedPassword);
+
+        userRepository.createUser(user);
     }
 }
