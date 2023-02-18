@@ -34,6 +34,6 @@ public class NotionGroceryListRepository implements GroceryListRepository {
 
         NotionGroceryPage page = new NotionGroceryPage(ingredientsToSave);
 
-        httpClient.createGroceryListPage(page);
+        httpClient.createGroceryListPage(page, user.getUsername());
     }
 }

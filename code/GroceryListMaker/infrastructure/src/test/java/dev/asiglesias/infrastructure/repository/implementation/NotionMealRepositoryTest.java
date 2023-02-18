@@ -36,13 +36,13 @@ class NotionMealRepositoryTest {
         mealRepository.getMealsForUser(null);
 
         //Assert
-        verify(httpClient).getMeals();
+        verify(httpClient).getMealsForUser(null);
     }
 
     @Test
     void givenClientReturnsNull_whenGetMeals_thenReturnEmptyList() {
         //Arrange
-        when(httpClient.getMeals()).thenReturn(null);
+        when(httpClient.getMealsForUser(null)).thenReturn(null);
 
         //Act
         List<Meal> meals = mealRepository.getMealsForUser(null);
@@ -54,7 +54,7 @@ class NotionMealRepositoryTest {
     @Test
     void givenClientReturnsEmptyList_whenGetMeals_thenReturnEmptyList() {
         //Arrange
-        when(httpClient.getMeals()).thenReturn(Collections.emptyList());
+        when(httpClient.getMealsForUser(null)).thenReturn(Collections.emptyList());
 
         //Act
         List<Meal> meals = mealRepository.getMealsForUser(null);
@@ -69,8 +69,8 @@ class NotionMealRepositoryTest {
         List<String> recipesIds = List.of("id1", "id2");
         NotionMeal notionMeal = new NotionMeal(recipesIds);
 
-        when(httpClient.getMeals()).thenReturn(List.of(notionMeal));
-        when(httpClient.getIngredients(anyString()))
+        when(httpClient.getMealsForUser(null)).thenReturn(List.of(notionMeal));
+        when(httpClient.getIngredientsForUser(anyString(), any()))
                 .thenReturn(List.of(new NotionIngredient("120g", "Rice")));
 
         //Act
@@ -93,8 +93,8 @@ class NotionMealRepositoryTest {
         List<String> recipesIds = List.of("id1");
         NotionMeal notionMeal = new NotionMeal(recipesIds);
 
-        when(httpClient.getMeals()).thenReturn(List.of(notionMeal));
-        when(httpClient.getIngredients(anyString()))
+        when(httpClient.getMealsForUser(null)).thenReturn(List.of(notionMeal));
+        when(httpClient.getIngredientsForUser(anyString(), any()))
                 .thenReturn(List.of(new NotionIngredient(null, "Rice")));
 
         //Act
@@ -117,8 +117,8 @@ class NotionMealRepositoryTest {
         List<String> recipesIds = List.of("id1");
         NotionMeal notionMeal = new NotionMeal(recipesIds);
 
-        when(httpClient.getMeals()).thenReturn(List.of(notionMeal));
-        when(httpClient.getIngredients(anyString()))
+        when(httpClient.getMealsForUser(null)).thenReturn(List.of(notionMeal));
+        when(httpClient.getIngredientsForUser(anyString(), any()))
                 .thenReturn(List.of(
                         new NotionIngredient("120g", name),
                         new NotionIngredient("120g", "Rice")
@@ -141,8 +141,8 @@ class NotionMealRepositoryTest {
         List<String> recipesIds = List.of("id1");
         NotionMeal notionMeal = new NotionMeal(recipesIds);
 
-        when(httpClient.getMeals()).thenReturn(List.of(notionMeal));
-        when(httpClient.getIngredients(anyString()))
+        when(httpClient.getMealsForUser(null)).thenReturn(List.of(notionMeal));
+        when(httpClient.getIngredientsForUser(anyString(), any()))
                 .thenReturn(List.of(new NotionIngredient("120", "Rice")));
 
         //Act
@@ -162,13 +162,13 @@ class NotionMealRepositoryTest {
         List<String> recipesIds = Collections.emptyList();
         NotionMeal notionMeal = new NotionMeal(recipesIds);
 
-        when(httpClient.getMeals()).thenReturn(List.of(notionMeal));
+        when(httpClient.getMealsForUser(null)).thenReturn(List.of(notionMeal));
 
         //Act
         List<Meal> meals = mealRepository.getMealsForUser(null);
 
         //Assert
-        verify(httpClient, never()).getIngredients(anyString());
+        verify(httpClient, never()).getIngredientsForUser(anyString(), any());
         assertThat(meals).isEmpty();
     }
 }

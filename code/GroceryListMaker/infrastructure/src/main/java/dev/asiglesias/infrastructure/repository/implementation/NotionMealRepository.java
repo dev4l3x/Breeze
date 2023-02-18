@@ -22,7 +22,7 @@ public class NotionMealRepository implements MealRepository {
 
     @Override
     public List<Meal> getMealsForUser(User user) {
-        List<NotionMeal> meals = notionHttpClient.getMeals();
+        List<NotionMeal> meals = notionHttpClient.getMealsForUser(user.getUsername());
 
         if (Objects.isNull(meals)) {
             return Collections.emptyList();
@@ -32,7 +32,7 @@ public class NotionMealRepository implements MealRepository {
         Map<String, List<NotionIngredient>> ingredientsByRecipe = meals.stream()
             .flatMap(meal -> meal.getRecipeIds().stream()).distinct()
             .map((recipeId) -> {
-                List<NotionIngredient> ingredients = notionHttpClient.getIngredients(recipeId);
+                List<NotionIngredient> ingredients = notionHttpClient.getIngredientsForUser(recipeId, user.getUsername());
                 int multiplyIngredientsBy = numberOfRecipesWithId(meals, recipeId);
                 List<NotionIngredient> allIngredientsNeeded =
                         Collections.nCopies(multiplyIngredientsBy, ingredients).stream().flatMap(List::stream).collect(Collectors.toList());

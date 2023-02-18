@@ -4,16 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import dev.asiglesias.infrastructure.notion.controllers.repositories.NotionConfigurationMongoRepository;
+import dev.asiglesias.infrastructure.notion.controllers.repositories.entities.NotionConfiguration;
 import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionGroceryPage;
 import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionIngredient;
 import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionMeal;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.http.HeaderUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.function.ServerRequest;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -39,8 +39,7 @@ public class NotionHttpClient {
 
     private final ObjectMapper jsonMapper;
 
-    @Value("${notion.secret}")
-    private String notionSecret;
+    private final NotionConfigurationMongoRepository notionConfigurationMongoRepository;
 
     @Value("${notion.baseuri}")
     private String notionBaseUri;
@@ -57,21 +56,26 @@ public class NotionHttpClient {
     @Value("${notion.grocerylistdb}")
     private String groceryListId;
 
-    public NotionHttpClient() {
+    public NotionHttpClient(NotionConfigurationMongoRepository notionConfigurationMongoRepository) {
         httpClient = HttpClient.newHttpClient();
         jsonMapper = new ObjectMapper();
+        this.notionConfigurationMongoRepository = notionConfigurationMongoRepository;
     }
 
-    private HttpRequest.Builder buildHttpRequest(String relativePath) {
+    private HttpRequest.Builder buildHttpRequest(String relativePath, String userId) {
+        Optional<NotionConfiguration> notionConfiguration = notionConfigurationMongoRepository.findByUsername(userId);
+        if(notionConfiguration.isEmpty()) {
+            throw new RuntimeException("No notion configuration for user " + userId);
+        }
         return HttpRequest.newBuilder()
                 .uri(URI.create(String.format("%s/%s", notionBaseUri, relativePath)))
-                .header(AUTHORIZATION_HEADER, notionSecret)
+                .header(AUTHORIZATION_HEADER, notionConfiguration.get().getSecret())
                 .header(NOTION_VERSION_HEADER, notionVersion)
                 .header(CONTENT_TYPE, "application/json");
     }
 
-    public List<NotionMeal> getMeals() {
-        HttpRequest request = buildHttpRequest(String.format("databases/%s/query", mealDatabaseId))
+    public List<NotionMeal> getMealsForUser(String username) {
+        HttpRequest request = buildHttpRequest(String.format("databases/%s/query", mealDatabaseId), username)
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -117,8 +121,9 @@ public class NotionHttpClient {
         }
     }
 
-    public List<NotionIngredient> getIngredients(String recipeId) {
-        HttpRequest request = buildHttpRequest(String.format("pages/%s/properties/%s", recipeId, ingredientsId))
+    public List<NotionIngredient> getIngredientsForUser(String recipeId, String username) {
+        HttpRequest request = buildHttpRequest(String.format("pages/%s/properties/%s", recipeId, ingredientsId),
+                username)
                 .GET()
                 .build();
 
@@ -149,11 +154,11 @@ public class NotionHttpClient {
         }
     }
 
-    public void createGroceryListPage(NotionGroceryPage page) {
+    public void createGroceryListPage(NotionGroceryPage page, String username) {
 
         String body = getGroceryPageAsJson(page);
 
-        HttpRequest request = buildHttpRequest("pages")
+        HttpRequest request = buildHttpRequest("pages", username)
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
