@@ -44,7 +44,7 @@ public class NotionController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PostMapping("configuration")
+    @GetMapping("configuration")
     public ResponseEntity<Void> setupPublicNotionConfiguration(@RequestParam String code) {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
