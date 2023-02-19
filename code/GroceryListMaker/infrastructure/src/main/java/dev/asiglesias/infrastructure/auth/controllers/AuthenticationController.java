@@ -33,7 +33,10 @@ public class AuthenticationController {
     @PostMapping("signin")
     public ResponseEntity<LoginResponseDto> login(@RequestBody UserDTO userDTO) {
 
-        UserDataContainer userDataContainer = new UserDataContainer(userDTO.username(), userDTO.password());
+        UserDataContainer userDataContainer = UserDataContainer.builder()
+                .username(userDTO.username())
+                .password(userDTO.password())
+                .build();
 
         String jwt = signInUserUseCase.signIn(userDataContainer);
 
@@ -43,7 +46,10 @@ public class AuthenticationController {
     @PostMapping("signup")
     public ResponseEntity<Void> register(@RequestBody UserDTO userToCreate) {
 
-        UserDataContainer userDataContainer = new UserDataContainer(userToCreate.username(), userToCreate.password());
+        UserDataContainer userDataContainer = UserDataContainer.builder()
+                .username(userToCreate.username())
+                .password(userToCreate.password())
+                .build();
 
         createUserUseCase.createUser(userDataContainer);
 
