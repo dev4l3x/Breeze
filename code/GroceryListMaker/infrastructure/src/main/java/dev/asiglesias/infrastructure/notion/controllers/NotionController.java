@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("notion")
 @RequiredArgsConstructor
@@ -27,10 +29,17 @@ public class NotionController {
 
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        NotionConfiguration configuration = new NotionConfiguration();
-        configuration.setUsername(username);
-        configuration.setSecret(encryptionService.encrypt(notionSecretDTO.getSecret()));
-        notionConfigurationMongoRepository.save(configuration);
+        Optional<NotionConfiguration> configuration = notionConfigurationMongoRepository.findByUsername(username);
+
+        if (configuration.isEmpty()) {
+            NotionConfiguration newConfiguration = new NotionConfiguration();
+            newConfiguration.setUsername(username);
+            configuration = Optional.of(newConfiguration);
+        }
+
+        configuration.get().setSecret(encryptionService.encrypt(notionSecretDTO.getSecret()));
+
+        notionConfigurationMongoRepository.save(configuration.get());
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

@@ -1,7 +1,9 @@
 package dev.asiglesias.application.exceptions;
 
-public class InvalidParameterException extends RuntimeException {
+import dev.asiglesias.domain.exception.DomainException;
+
+public class InvalidParameterException extends DomainException {
     public InvalidParameterException(String message) {
-        super(message);
+        super("INVALID_PARAMETER", message);
     }
 }
