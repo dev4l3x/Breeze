@@ -203,7 +203,7 @@ public class NotionHttpClient {
         body.put("grant_type", "authorization_code");
         body.put("code", code);
 
-        String basicAuthentication = String.format("%s:%s", clientId, clientSecret);
+        String basicAuthentication = String.format("Basic %s:%s", clientId, clientSecret);
         String basicAuthToken = Base64.getEncoder()
                 .encodeToString(basicAuthentication.getBytes(StandardCharsets.UTF_8));
 
