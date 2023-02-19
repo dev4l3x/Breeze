@@ -3,11 +3,18 @@ services:
   app:
     build: .
     ports:
-      - "8000:8000"
+      - "80:80"
+    environment:
+      PORT: 80
+      JWT_SECRET: ${JWT_SECRET}
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_HOST: ${MONGO_HOST}
+
   mongo:
     image: mongo
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
