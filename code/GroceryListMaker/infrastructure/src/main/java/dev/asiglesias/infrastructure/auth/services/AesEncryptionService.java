@@ -15,9 +15,8 @@ public class AesEncryptionService implements EncryptionService {
     public static final String ENCRYPTION_ALGORITHM = "AES/ECB/PKCS5Padding";
     private final SecretKeySpec secretKey;
 
-    public AesEncryptionService(@Value("${app.security.encryption.aes.secret}") String secret) {
-
-        secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "AES");
+    public AesEncryptionService(@Value("${app.security.encryption.aes.secret}") String secret) throws Exception {
+        this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "AES");
 
     }
 
