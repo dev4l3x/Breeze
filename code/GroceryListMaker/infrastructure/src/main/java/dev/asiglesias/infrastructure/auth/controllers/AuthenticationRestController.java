@@ -9,23 +9,21 @@ import dev.asiglesias.application.auth.services.EncodingService;
 import dev.asiglesias.infrastructure.auth.repositories.usecases.UserRepositoryImpl;
 import dev.asiglesias.infrastructure.auth.services.JwtTokenService;
 import dev.asiglesias.infrastructure.rest.v1.dto.LoginResponseDto;
-import dev.asiglesias.infrastructure.rest.v1.dto.UserDTO;
+import dev.asiglesias.infrastructure.auth.controllers.dto.rest.UserDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-public class AuthenticationController {
+@RequestMapping("api")
+public class AuthenticationRestController {
 
 
     private final CreateUserUseCase createUserUseCase;
 
     private final SignInUserUseCase signInUserUseCase;
 
-    public AuthenticationController(UserRepositoryImpl userRepository, JwtTokenService tokenService, EncodingService encodingService) {
+    public AuthenticationRestController(UserRepositoryImpl userRepository, JwtTokenService tokenService, EncodingService encodingService) {
         createUserUseCase = new CreateUserUseCaseImpl(userRepository, encodingService);
         signInUserUseCase = new SignInUserUseCaseImpl(encodingService, userRepository, tokenService);
     }

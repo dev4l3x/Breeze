@@ -9,15 +9,19 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import javax.servlet.*;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 public class JwtTokenAuthenticationFilter implements Filter {
 
+    public static final String ACCESS_TOKEN = "access_token";
     private final RequestMatcher matcher = new AntPathRequestMatcher("/sign*");
 
     private final JwtTokenService service;
@@ -37,8 +41,11 @@ public class JwtTokenAuthenticationFilter implements Filter {
             return;
         }
 
-        Optional<String> token = Optional.ofNullable(request.getHeader("authorization"))
-                .map(t -> t.replace("Bearer ", ""));
+        Optional<String> token = getTokenFromHeaders(request);
+
+        if (token.isEmpty()) {
+            token = getTokenFromCookies(request);
+        }
 
         if (token.isPresent() && !token.get().isBlank() && service.isValid(token.get())) {
             String username = service.getUser(token.get());
@@ -46,9 +53,30 @@ public class JwtTokenAuthenticationFilter implements Filter {
                     List.of(new SimpleGrantedAuthority("USER")));
             SecurityContextHolder.createEmptyContext();
             SecurityContextHolder.getContext().setAuthentication(auth);
+        } else {
+           response.sendRedirect("/signin");
         }
 
         filterChain.doFilter(servletRequest, servletResponse);
+    }
+
+    private Optional<String> getTokenFromCookies(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+
+        if (Objects.isNull(cookies)) {
+            return Optional.empty();
+        }
+
+        Optional<Cookie> accessCookie = Arrays.stream(cookies)
+                .filter(cookie -> cookie.getName().equals(ACCESS_TOKEN))
+                .findAny();
+        return accessCookie.map(Cookie::getValue);
+    }
+
+    private Optional<String> getTokenFromHeaders(HttpServletRequest request) {
+        Optional<String> token = Optional.ofNullable(request.getHeader("authorization"))
+                .map(t -> t.replace("Bearer ", ""));
+        return token;
     }
 
     @Override
