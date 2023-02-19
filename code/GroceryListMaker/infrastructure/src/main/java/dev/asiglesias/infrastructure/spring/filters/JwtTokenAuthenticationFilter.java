@@ -55,6 +55,7 @@ public class JwtTokenAuthenticationFilter implements Filter {
             SecurityContextHolder.getContext().setAuthentication(auth);
         } else {
            response.sendRedirect("/signin");
+           return;
         }
 
         filterChain.doFilter(servletRequest, servletResponse);
