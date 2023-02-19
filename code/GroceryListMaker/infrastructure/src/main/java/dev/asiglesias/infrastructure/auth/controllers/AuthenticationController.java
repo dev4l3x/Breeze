@@ -5,7 +5,7 @@ import dev.asiglesias.application.auth.CreateUserUseCaseImpl;
 import dev.asiglesias.application.auth.SignInUserUseCase;
 import dev.asiglesias.application.auth.SignInUserUseCaseImpl;
 import dev.asiglesias.application.auth.models.UserDataContainer;
-import dev.asiglesias.application.auth.services.EncryptionService;
+import dev.asiglesias.application.auth.services.EncodingService;
 import dev.asiglesias.infrastructure.auth.repositories.usecases.UserRepositoryImpl;
 import dev.asiglesias.infrastructure.auth.services.JwtTokenService;
 import dev.asiglesias.infrastructure.rest.v1.dto.LoginResponseDto;
@@ -25,9 +25,9 @@ public class AuthenticationController {
 
     private final SignInUserUseCase signInUserUseCase;
 
-    public AuthenticationController(UserRepositoryImpl userRepository, JwtTokenService tokenService, EncryptionService encryptionService) {
-        createUserUseCase = new CreateUserUseCaseImpl(userRepository, encryptionService);
-        signInUserUseCase = new SignInUserUseCaseImpl(encryptionService, userRepository, tokenService);
+    public AuthenticationController(UserRepositoryImpl userRepository, JwtTokenService tokenService, EncodingService encodingService) {
+        createUserUseCase = new CreateUserUseCaseImpl(userRepository, encodingService);
+        signInUserUseCase = new SignInUserUseCaseImpl(encodingService, userRepository, tokenService);
     }
 
     @PostMapping("signin")

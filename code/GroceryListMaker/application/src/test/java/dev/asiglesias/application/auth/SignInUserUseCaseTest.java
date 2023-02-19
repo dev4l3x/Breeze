@@ -2,7 +2,7 @@ package dev.asiglesias.application.auth;
 
 import dev.asiglesias.application.auth.models.UserDataContainer;
 import dev.asiglesias.application.auth.repositories.UserRepository;
-import dev.asiglesias.application.auth.services.EncryptionService;
+import dev.asiglesias.application.auth.services.EncodingService;
 import dev.asiglesias.application.auth.services.TokenService;
 import dev.asiglesias.application.exceptions.InvalidParameterException;
 import dev.asiglesias.domain.User;
@@ -32,7 +32,7 @@ class SignInUserUseCaseTest {
     public static final String ENCRYPTED_PASSWORD = "encrypted_password";
     public static final String TEST_TOKEN = "test-token";
     @Mock
-    private EncryptionService encryptionService;
+    private EncodingService encodingService;
 
     @Mock
     private UserRepository userRepository;
@@ -86,7 +86,7 @@ class SignInUserUseCaseTest {
                 .build();
 
         when(userRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(user));
-        when(encryptionService.encrypt(TEST_PASSWORD)).thenReturn("invalid_password");
+        when(encodingService.encode(TEST_PASSWORD)).thenReturn("invalid_password");
 
         //Act && Assert
         assertThrows(InvalidParameterException.class, () -> signInUserUseCase.signIn(userDataContainer));
@@ -105,7 +105,7 @@ class SignInUserUseCaseTest {
                 .build();
 
         when(userRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(user));
-        when(encryptionService.encrypt(TEST_PASSWORD)).thenReturn(ENCRYPTED_PASSWORD);
+        when(encodingService.encode(TEST_PASSWORD)).thenReturn(ENCRYPTED_PASSWORD);
         when(tokenService.createTokenForUsername(user.getUsername())).thenReturn(TEST_TOKEN);
 
         //Act

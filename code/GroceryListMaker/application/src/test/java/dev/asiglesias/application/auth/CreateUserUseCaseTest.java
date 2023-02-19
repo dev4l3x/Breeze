@@ -2,7 +2,7 @@ package dev.asiglesias.application.auth;
 
 import dev.asiglesias.application.auth.models.UserDataContainer;
 import dev.asiglesias.application.auth.repositories.UserRepository;
-import dev.asiglesias.application.auth.services.EncryptionService;
+import dev.asiglesias.application.auth.services.EncodingService;
 import dev.asiglesias.application.exceptions.InvalidParameterException;
 import dev.asiglesias.domain.User;
 import org.junit.jupiter.api.Named;
@@ -35,7 +35,7 @@ class CreateUserUseCaseTest {
     private UserRepository userRepository;
 
     @Mock
-    private EncryptionService encryptionService;
+    private EncodingService encodingService;
 
     @InjectMocks
     CreateUserUseCaseImpl createUserUseCase;
@@ -91,13 +91,13 @@ class CreateUserUseCaseTest {
                 .build();
 
         when(userRepository.existsUsername(TEST_USERNAME)).thenReturn(false);
-        when(encryptionService.encrypt(TEST_PASSWORD)).thenReturn(ENCRYPTED_TEST_PASSWORD);
+        when(encodingService.encode(TEST_PASSWORD)).thenReturn(ENCRYPTED_TEST_PASSWORD);
 
         //Act
         createUserUseCase.createUser(userDataContainer);
 
         //Assert
-        verify(encryptionService).encrypt(TEST_PASSWORD);
+        verify(encodingService).encode(TEST_PASSWORD);
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).createUser(userCaptor.capture());
         assertThat(userCaptor.getValue().getUsername()).isEqualTo(TEST_USERNAME);

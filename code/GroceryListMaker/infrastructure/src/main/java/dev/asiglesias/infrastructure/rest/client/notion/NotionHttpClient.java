@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import dev.asiglesias.application.auth.services.EncryptionService;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.NotionConfigurationMongoRepository;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.entities.NotionConfiguration;
 import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionGroceryPage;
@@ -41,6 +42,8 @@ public class NotionHttpClient {
 
     private final NotionConfigurationMongoRepository notionConfigurationMongoRepository;
 
+    private final EncryptionService encryptionService;
+
     @Value("${notion.baseuri}")
     private String notionBaseUri;
 
@@ -56,10 +59,12 @@ public class NotionHttpClient {
     @Value("${notion.grocerylistdb}")
     private String groceryListId;
 
-    public NotionHttpClient(NotionConfigurationMongoRepository notionConfigurationMongoRepository) {
+    public NotionHttpClient(NotionConfigurationMongoRepository notionConfigurationMongoRepository,
+                            EncryptionService encryptionService) {
         httpClient = HttpClient.newHttpClient();
         jsonMapper = new ObjectMapper();
         this.notionConfigurationMongoRepository = notionConfigurationMongoRepository;
+        this.encryptionService = encryptionService;
     }
 
     private HttpRequest.Builder buildHttpRequest(String relativePath, String userId) {
@@ -67,9 +72,10 @@ public class NotionHttpClient {
         if(notionConfiguration.isEmpty()) {
             throw new RuntimeException("No notion configuration for user " + userId);
         }
+        String decryptedToken = encryptionService.decrypt(notionConfiguration.get().getSecret());
         return HttpRequest.newBuilder()
                 .uri(URI.create(String.format("%s/%s", notionBaseUri, relativePath)))
-                .header(AUTHORIZATION_HEADER, notionConfiguration.get().getSecret())
+                .header(AUTHORIZATION_HEADER, decryptedToken)
                 .header(NOTION_VERSION_HEADER, notionVersion)
                 .header(CONTENT_TYPE, "application/json");
     }

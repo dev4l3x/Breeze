@@ -2,7 +2,7 @@ package dev.asiglesias.application.auth;
 
 import dev.asiglesias.application.auth.models.UserDataContainer;
 import dev.asiglesias.application.auth.repositories.UserRepository;
-import dev.asiglesias.application.auth.services.EncryptionService;
+import dev.asiglesias.application.auth.services.EncodingService;
 import dev.asiglesias.application.auth.services.TokenService;
 import dev.asiglesias.application.exceptions.InvalidParameterException;
 import dev.asiglesias.domain.User;
@@ -13,7 +13,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SignInUserUseCaseImpl implements SignInUserUseCase {
 
-    private final EncryptionService encryptionService;
+    private final EncodingService encodingService;
 
     private final UserRepository userRepository;
 
@@ -36,9 +36,7 @@ public class SignInUserUseCaseImpl implements SignInUserUseCase {
             throw new InvalidParameterException("Username not found");
         }
 
-        String encryptedPassword = encryptionService.encrypt(userDataContainer.getPassword());
-
-        if (!encryptedPassword.equals(user.get().getPassword())) {
+        if (!encodingService.matches(userDataContainer.getPassword(), user.get().getPassword())) {
             throw new InvalidParameterException("Invalid password");
         }
 
