@@ -57,4 +57,17 @@ class IngredientAggregatorServiceTest {
         assertEquals(0, aggregatedTomatoes.get(0).getQuantity());
     }
 
+    @Test
+    void givenIngredientsWithDecimalQuantity_whenAggregate_thenRoundUpper() {
+        Product product = new Product("tomato");
+        Ingredient firstTomato = Ingredient.builder().quantity(0.5).unit(MeasureUnit.piece()).product(product).build();
+        Ingredient secondTomato = Ingredient.builder().quantity(3).unit(MeasureUnit.piece()).product(product).build();
+
+        List<Ingredient> aggregatedTomatoes =
+                aggregatorService.aggregate(List.of(firstTomato, secondTomato));
+
+        assertThat(aggregatedTomatoes).hasSize(1);
+        assertEquals(4, aggregatedTomatoes.get(0).getQuantity());
+    }
+
 }

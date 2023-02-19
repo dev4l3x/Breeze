@@ -33,10 +33,10 @@ public class IngredientAggregatorService {
     }
 
     private double sumIngredientQuantityWithUnit(List<Ingredient> ingredients, MeasureUnit unit) {
-        return ingredients.stream()
+        return Math.ceil(ingredients.stream()
                 .filter(ingredient -> ingredient.getUnit().equals(unit))
-                .map(Ingredient::getQuantity)
-                .reduce(0d, Double::sum);
+                .mapToDouble(Ingredient::getQuantity)
+                .sum());
     }
 
     private List<Product> getAllProductsFromIngredients(List<Ingredient> ingredients) {
