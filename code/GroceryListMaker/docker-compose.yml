@@ -7,7 +7,7 @@ services:
     depends_on:
       - mongo
     environment:
-      PORT: 80
+      PORT: 8080
       JWT_SECRET: ${JWT_SECRET}
       MONGO_USERNAME: ${MONGO_APP_USERNAME}
       MONGO_PASSWORD: ${MONGO_APP_PASSWORD}
