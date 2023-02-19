@@ -32,7 +32,7 @@ public class SecurityConfiguration {
                 .cors().disable()
                 .csrf().disable();
         httpSecurity.authorizeRequests()
-                .antMatchers("/signup", "/signin").permitAll()
+                .antMatchers("/signup", "/signin", "/policy.html", "/terms.html").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JwtTokenAuthenticationFilter(tokenService), BasicAuthenticationFilter.class)

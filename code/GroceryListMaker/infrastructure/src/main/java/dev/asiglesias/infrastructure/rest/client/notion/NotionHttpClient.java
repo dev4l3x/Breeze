@@ -20,6 +20,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,6 +60,12 @@ public class NotionHttpClient {
     @Value("${notion.grocerylistdb}")
     private String groceryListId;
 
+    @Value("${notion.clientid}")
+    private String clientId;
+
+    @Value("${notion.client-secret}")
+    private String clientSecret;
+
     public NotionHttpClient(NotionConfigurationMongoRepository notionConfigurationMongoRepository,
                             EncryptionService encryptionService) {
         httpClient = HttpClient.newHttpClient();
@@ -67,21 +74,26 @@ public class NotionHttpClient {
         this.encryptionService = encryptionService;
     }
 
-    private HttpRequest.Builder buildHttpRequest(String relativePath, String userId) {
+    private HttpRequest.Builder buildAuthenticatedHttpRequest(String relativePath, String userId) {
         Optional<NotionConfiguration> notionConfiguration = notionConfigurationMongoRepository.findByUsername(userId);
         if(notionConfiguration.isEmpty()) {
             throw new RuntimeException("No notion configuration for user " + userId);
         }
         String decryptedToken = encryptionService.decrypt(notionConfiguration.get().getSecret());
+
+        return buildHttpRequest(relativePath)
+                .header(AUTHORIZATION_HEADER, decryptedToken);
+    }
+
+    private HttpRequest.Builder buildHttpRequest(String relativePath) {
         return HttpRequest.newBuilder()
                 .uri(URI.create(String.format("%s/%s", notionBaseUri, relativePath)))
-                .header(AUTHORIZATION_HEADER, decryptedToken)
                 .header(NOTION_VERSION_HEADER, notionVersion)
                 .header(CONTENT_TYPE, "application/json");
     }
 
     public List<NotionMeal> getMealsForUser(String username) {
-        HttpRequest request = buildHttpRequest(String.format("databases/%s/query", mealDatabaseId), username)
+        HttpRequest request = buildAuthenticatedHttpRequest(String.format("databases/%s/query", mealDatabaseId), username)
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -128,7 +140,7 @@ public class NotionHttpClient {
     }
 
     public List<NotionIngredient> getIngredientsForUser(String recipeId, String username) {
-        HttpRequest request = buildHttpRequest(String.format("pages/%s/properties/%s", recipeId, ingredientsId),
+        HttpRequest request = buildAuthenticatedHttpRequest(String.format("pages/%s/properties/%s", recipeId, ingredientsId),
                 username)
                 .GET()
                 .build();
@@ -164,7 +176,7 @@ public class NotionHttpClient {
 
         String body = getGroceryPageAsJson(page);
 
-        HttpRequest request = buildHttpRequest("pages", username)
+        HttpRequest request = buildAuthenticatedHttpRequest("pages", username)
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
@@ -183,6 +195,36 @@ public class NotionHttpClient {
             log.error("An error has occurred while trying to save grocery list, Error: {}", exception.toString());
         }
 
+    }
+
+    @SneakyThrows
+    public String getAccessTokenForCode(String code) {
+        ObjectNode body = jsonMapper.createObjectNode();
+        body.put("grant_type", "authorization_code");
+        body.put("code", code);
+
+        String basicAuthentication = String.format("%s:%s", clientId, clientSecret);
+        String basicAuthToken = Base64.getEncoder()
+                .encodeToString(basicAuthentication.getBytes(StandardCharsets.UTF_8));
+
+        HttpRequest request = buildHttpRequest("oauth/token")
+                .header(AUTHORIZATION_HEADER, basicAuthToken)
+                .POST(HttpRequest.BodyPublishers.ofString(jsonMapper.writeValueAsString(body)))
+                .build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpStatus status = HttpStatus.valueOf(response.statusCode());
+
+            if (status.isError()) {
+                log.error("Notion HTTP Client error while retrieving access token: {}", response.body());
+            }
+
+            return jsonMapper.readTree(response.body()).get("access_token").textValue();
+        } catch (Exception ex) {
+            log.error("An error has occurred while trying to obtain access token");
+        }
+        return null;
     }
 
     @SneakyThrows
