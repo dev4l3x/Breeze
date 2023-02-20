@@ -41,8 +41,7 @@ class NotionGroceryListRepositoryTest {
 
         //Assert
         verify(httpClient).createGroceryListPage(
-                argThat(page -> page.getToBuyIngredients().contains(ingredient.toString())),
-                any()
+                argThat(page -> page.getToBuyIngredients().contains(ingredient.toString()))
         );
     }
 
@@ -55,7 +54,7 @@ class NotionGroceryListRepositoryTest {
         notionGroceryListRepository.createForUser(null, null);
 
         //Assert
-        verify(httpClient, never()).createGroceryListPage(any(), any());
+        verify(httpClient, never()).createGroceryListPage(any());
     }
 
     @Test
@@ -67,6 +66,6 @@ class NotionGroceryListRepositoryTest {
         notionGroceryListRepository.createForUser(null, null);
 
         //Assert
-        verify(httpClient, never()).createGroceryListPage(any(), any());
+        verify(httpClient, never()).createGroceryListPage(any());
     }
 }

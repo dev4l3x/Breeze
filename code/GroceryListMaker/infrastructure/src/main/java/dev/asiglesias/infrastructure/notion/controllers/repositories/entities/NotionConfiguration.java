@@ -16,4 +16,8 @@ public class NotionConfiguration {
     String secret;
 
     String mealPageId;
+
+    String groceryListDatabaseId;
+
+    String mealPlanDatabaseId;
 }

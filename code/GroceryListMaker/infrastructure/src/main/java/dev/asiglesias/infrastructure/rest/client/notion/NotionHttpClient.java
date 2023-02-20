@@ -4,13 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import dev.asiglesias.application.auth.services.AuthenticationContext;
 import dev.asiglesias.application.auth.services.EncryptionService;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.NotionConfigurationMongoRepository;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.entities.NotionConfiguration;
-import dev.asiglesias.infrastructure.rest.client.notion.dto.AccessToken;
-import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionGroceryPage;
-import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionIngredient;
-import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionMeal;
+import dev.asiglesias.infrastructure.rest.client.notion.dto.*;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +44,8 @@ public class NotionHttpClient {
 
     private final EncryptionService encryptionService;
 
+    private final AuthenticationContext authenticationContext;
+
     @Value("${notion.baseuri}")
     private String notionBaseUri;
 
@@ -68,16 +68,18 @@ public class NotionHttpClient {
     private String clientSecret;
 
     public NotionHttpClient(NotionConfigurationMongoRepository notionConfigurationMongoRepository,
-                            EncryptionService encryptionService) {
+                            EncryptionService encryptionService, AuthenticationContext authenticationContext) {
         httpClient = HttpClient.newHttpClient();
         jsonMapper = new ObjectMapper();
         this.notionConfigurationMongoRepository = notionConfigurationMongoRepository;
         this.encryptionService = encryptionService;
+        this.authenticationContext = authenticationContext;
     }
 
-    private HttpRequest.Builder buildAuthenticatedHttpRequest(String relativePath, String userId) {
+    private HttpRequest.Builder buildAuthenticatedHttpRequest(String relativePath) {
+        String userId = authenticationContext.getUsername();
         Optional<NotionConfiguration> notionConfiguration = notionConfigurationMongoRepository.findByUsername(userId);
-        if(notionConfiguration.isEmpty()) {
+        if (notionConfiguration.isEmpty()) {
             throw new RuntimeException("No notion configuration for user " + userId);
         }
         String decryptedToken = encryptionService.decrypt(notionConfiguration.get().getSecret());
@@ -93,8 +95,8 @@ public class NotionHttpClient {
                 .header(CONTENT_TYPE, "application/json");
     }
 
-    public List<NotionMeal> getMealsForUser(String username) {
-        HttpRequest request = buildAuthenticatedHttpRequest(String.format("databases/%s/query", mealDatabaseId), username)
+    public List<NotionMeal> getMealsForUser() {
+        HttpRequest request = buildAuthenticatedHttpRequest(String.format("databases/%s/query", mealDatabaseId))
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -140,9 +142,8 @@ public class NotionHttpClient {
         }
     }
 
-    public List<NotionIngredient> getIngredientsForUser(String recipeId, String username) {
-        HttpRequest request = buildAuthenticatedHttpRequest(String.format("pages/%s/properties/%s", recipeId, ingredientsId),
-                username)
+    public List<NotionIngredient> getIngredientsForRecipe(String recipeId) {
+        HttpRequest request = buildAuthenticatedHttpRequest(String.format("pages/%s/properties/%s", recipeId, ingredientsId))
                 .GET()
                 .build();
 
@@ -173,11 +174,11 @@ public class NotionHttpClient {
         }
     }
 
-    public void createGroceryListPage(NotionGroceryPage page, String username) {
+    public void createGroceryListPage(NotionGroceryPage page) {
 
         String body = getGroceryPageAsJson(page);
 
-        HttpRequest request = buildAuthenticatedHttpRequest("pages", username)
+        HttpRequest request = buildAuthenticatedHttpRequest("pages")
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
@@ -199,7 +200,7 @@ public class NotionHttpClient {
     }
 
     @SneakyThrows
-    public Optional<AccessToken> getAccessTokenForCode(String code) {
+    public Optional<NotionUserInfo> getAccessTokenForCode(String code) {
         ObjectNode body = jsonMapper.createObjectNode();
         body.put("grant_type", "authorization_code");
         body.put("code", code);
@@ -223,12 +224,49 @@ public class NotionHttpClient {
 
             String accessToken = jsonMapper.readTree(response.body()).get("access_token").textValue();
             String duplicatedPageId = jsonMapper.readTree(response.body()).get("duplicated_template_id").textValue();
+            List<NotionObject> children = getChildrenOfPage(duplicatedPageId);
 
-            return Optional.of(new AccessToken(accessToken, duplicatedPageId));
+            String groceryListId = children.stream()
+                    .filter(n -> n.name().equals("Grocery List"))
+                    .findAny()
+                    .map(NotionObject::id)
+                    .orElse(null);
+            String mealPlanId = children.stream()
+                    .filter(n -> n.name().equals("Meal Planner"))
+                    .findAny()
+                    .map(NotionObject::id)
+                    .orElse(null);
+
+            return Optional.of(new NotionUserInfo(accessToken, duplicatedPageId, groceryListId, mealPlanId));
         } catch (Exception ex) {
             log.error("An error has occurred while trying to obtain access token");
         }
         return Optional.empty();
+    }
+
+    private List<NotionObject> getChildrenOfPage(String pageId) {
+        HttpRequest request = buildAuthenticatedHttpRequest(String.format("blocks/%s/children", pageId))
+                .GET()
+                .build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            List<NotionObject> pages = new ArrayList<>();
+
+            jsonMapper.readTree(response.body()).withArray("results").elements().forEachRemaining((jsonNode) -> {
+                String id = jsonNode.get("id").asText();
+                String name = jsonNode.get("child_page").get("title").asText();
+                pages.add(new NotionObject(id, name));
+            });
+
+            return pages;
+
+        } catch (Exception exception) {
+            log.error("An error has occurred while trying to get meals");
+            log.error(exception.toString());
+            return Collections.emptyList();
+        }
     }
 
     @SneakyThrows

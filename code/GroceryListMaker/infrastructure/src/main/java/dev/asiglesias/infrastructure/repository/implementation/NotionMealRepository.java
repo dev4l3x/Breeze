@@ -32,7 +32,7 @@ public class NotionMealRepository implements MealRepository {
         Map<String, List<NotionIngredient>> ingredientsByRecipe = meals.stream()
             .flatMap(meal -> meal.getRecipeIds().stream()).distinct()
             .map((recipeId) -> {
-                List<NotionIngredient> ingredients = notionHttpClient.getIngredientsForUser(recipeId, user.getUsername());
+                List<NotionIngredient> ingredients = notionHttpClient.getIngredientsForRecipe(recipeId);
                 int multiplyIngredientsBy = numberOfRecipesWithId(meals, recipeId);
                 List<NotionIngredient> allIngredientsNeeded =
                         Collections.nCopies(multiplyIngredientsBy, ingredients).stream().flatMap(List::stream).collect(Collectors.toList());

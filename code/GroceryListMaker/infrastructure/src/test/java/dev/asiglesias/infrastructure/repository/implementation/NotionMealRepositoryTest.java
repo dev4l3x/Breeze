@@ -70,7 +70,7 @@ class NotionMealRepositoryTest {
         NotionMeal notionMeal = new NotionMeal(recipesIds);
 
         when(httpClient.getMealsForUser(null)).thenReturn(List.of(notionMeal));
-        when(httpClient.getIngredientsForUser(anyString(), any()))
+        when(httpClient.getIngredientsForRecipe(anyString()))
                 .thenReturn(List.of(new NotionIngredient("120g", "Rice")));
 
         //Act
@@ -94,7 +94,7 @@ class NotionMealRepositoryTest {
         NotionMeal notionMeal = new NotionMeal(recipesIds);
 
         when(httpClient.getMealsForUser(null)).thenReturn(List.of(notionMeal));
-        when(httpClient.getIngredientsForUser(anyString(), any()))
+        when(httpClient.getIngredientsForRecipe(anyString()))
                 .thenReturn(List.of(new NotionIngredient(null, "Rice")));
 
         //Act
@@ -118,7 +118,7 @@ class NotionMealRepositoryTest {
         NotionMeal notionMeal = new NotionMeal(recipesIds);
 
         when(httpClient.getMealsForUser(null)).thenReturn(List.of(notionMeal));
-        when(httpClient.getIngredientsForUser(anyString(), any()))
+        when(httpClient.getIngredientsForRecipe(anyString()))
                 .thenReturn(List.of(
                         new NotionIngredient("120g", name),
                         new NotionIngredient("120g", "Rice")
@@ -142,7 +142,7 @@ class NotionMealRepositoryTest {
         NotionMeal notionMeal = new NotionMeal(recipesIds);
 
         when(httpClient.getMealsForUser(null)).thenReturn(List.of(notionMeal));
-        when(httpClient.getIngredientsForUser(anyString(), any()))
+        when(httpClient.getIngredientsForRecipe(anyString()))
                 .thenReturn(List.of(new NotionIngredient("120", "Rice")));
 
         //Act
@@ -168,7 +168,7 @@ class NotionMealRepositoryTest {
         List<Meal> meals = mealRepository.getMealsForUser(null);
 
         //Assert
-        verify(httpClient, never()).getIngredientsForUser(anyString(), any());
+        verify(httpClient, never()).getIngredientsForRecipe(anyString());
         assertThat(meals).isEmpty();
     }
 }
