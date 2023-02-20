@@ -14,4 +14,6 @@ public class NotionConfiguration {
     String username;
 
     String secret;
+
+    String mealPageId;
 }

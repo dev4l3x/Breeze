@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import dev.asiglesias.application.auth.services.EncryptionService;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.NotionConfigurationMongoRepository;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.entities.NotionConfiguration;
+import dev.asiglesias.infrastructure.rest.client.notion.dto.AccessToken;
 import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionGroceryPage;
 import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionIngredient;
 import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionMeal;
@@ -198,7 +199,7 @@ public class NotionHttpClient {
     }
 
     @SneakyThrows
-    public String getAccessTokenForCode(String code) {
+    public Optional<AccessToken> getAccessTokenForCode(String code) {
         ObjectNode body = jsonMapper.createObjectNode();
         body.put("grant_type", "authorization_code");
         body.put("code", code);
@@ -220,11 +221,14 @@ public class NotionHttpClient {
                 log.error("Notion HTTP Client error while retrieving access token: {}", response.body());
             }
 
-            return jsonMapper.readTree(response.body()).get("access_token").textValue();
+            String accessToken = jsonMapper.readTree(response.body()).get("access_token").textValue();
+            String duplicatedPageId = jsonMapper.readTree(response.body()).get("duplicated_template_id").textValue();
+
+            return Optional.of(new AccessToken(accessToken, duplicatedPageId));
         } catch (Exception ex) {
             log.error("An error has occurred while trying to obtain access token");
         }
-        return null;
+        return Optional.empty();
     }
 
     @SneakyThrows

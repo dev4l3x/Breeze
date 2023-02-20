@@ -5,6 +5,7 @@ import dev.asiglesias.infrastructure.notion.controllers.dto.NotionSecretDTO;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.NotionConfigurationMongoRepository;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.entities.NotionConfiguration;
 import dev.asiglesias.infrastructure.rest.client.notion.NotionHttpClient;
+import dev.asiglesias.infrastructure.rest.client.notion.dto.AccessToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +51,11 @@ public class NotionController {
     public void setupPublicNotionConfiguration(@RequestParam String code, HttpServletResponse response) throws IOException {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        String access_token = notionHttpClient.getAccessTokenForCode(code);
+        Optional<AccessToken> accessToken = notionHttpClient.getAccessTokenForCode(code);
+
+        if (accessToken.isEmpty()) {
+            throw new RuntimeException("Unable to get token for Notion with provided code");
+        }
 
         Optional<NotionConfiguration> configuration = notionConfigurationMongoRepository.findByUsername(username);
 
@@ -60,7 +65,8 @@ public class NotionController {
             configuration = Optional.of(newConfiguration);
         }
 
-        configuration.get().setSecret(encryptionService.encrypt(access_token));
+        configuration.get().setSecret(encryptionService.encrypt(accessToken.get().token()));
+        configuration.get().setMealPageId(accessToken.get().duplicatedPageId());
 
         notionConfigurationMongoRepository.save(configuration.get());
 
