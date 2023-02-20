@@ -22,7 +22,7 @@ public class NotionMealRepository implements MealRepository {
 
     @Override
     public List<Meal> getMealsForUser(User user) {
-        List<NotionMeal> meals = notionHttpClient.getMealsForUser(user.getUsername());
+        List<NotionMeal> meals = notionHttpClient.getMealsForUser();
 
         if (Objects.isNull(meals)) {
             return Collections.emptyList();
