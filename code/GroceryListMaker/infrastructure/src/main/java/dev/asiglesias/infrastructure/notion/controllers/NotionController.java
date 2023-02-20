@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Optional;
 
 @RestController
@@ -45,7 +47,7 @@ public class NotionController {
     }
 
     @GetMapping("configuration")
-    public ResponseEntity<Void> setupPublicNotionConfiguration(@RequestParam String code) {
+    public void setupPublicNotionConfiguration(@RequestParam String code, HttpServletResponse response) throws IOException {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         String access_token = notionHttpClient.getAccessTokenForCode(code);
@@ -62,7 +64,7 @@ public class NotionController {
 
         notionConfigurationMongoRepository.save(configuration.get());
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        response.sendRedirect("/");
     }
 
 }
