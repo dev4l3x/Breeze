@@ -8,7 +8,7 @@ import dev.asiglesias.application.auth.models.UserDataContainer;
 import dev.asiglesias.application.auth.services.EncodingService;
 import dev.asiglesias.infrastructure.auth.repositories.usecases.UserRepositoryImpl;
 import dev.asiglesias.infrastructure.auth.services.JwtTokenService;
-import dev.asiglesias.infrastructure.rest.v1.dto.LoginResponseDto;
+import dev.asiglesias.infrastructure.grocerylist.controllers.dto.LoginResponseDto;
 import dev.asiglesias.infrastructure.auth.controllers.dto.rest.UserDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

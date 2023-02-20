@@ -2,9 +2,10 @@ package dev.asiglesias.infrastructure.repository.implementation;
 
 import dev.asiglesias.domain.Meal;
 import dev.asiglesias.domain.MeasureUnit;
-import dev.asiglesias.infrastructure.rest.client.notion.NotionHttpClient;
-import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionIngredient;
-import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionMeal;
+import dev.asiglesias.infrastructure.notion.client.NotionHttpClient;
+import dev.asiglesias.infrastructure.notion.client.dto.NotionIngredient;
+import dev.asiglesias.infrastructure.notion.client.dto.NotionMeal;
+import dev.asiglesias.infrastructure.notion.repositories.NotionMealRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;

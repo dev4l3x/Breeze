@@ -1,9 +1,9 @@
-package dev.asiglesias.infrastructure.mappers.dto;
+package dev.asiglesias.infrastructure.grocerylist.controllers.dto.mappers;
 
 import dev.asiglesias.domain.MeasureUnit;
 import dev.asiglesias.domain.Product;
-import dev.asiglesias.infrastructure.rest.v1.dto.MeasureUnitDTO;
-import dev.asiglesias.infrastructure.rest.v1.dto.ProductDTO;
+import dev.asiglesias.infrastructure.grocerylist.controllers.dto.MeasureUnitDTO;
+import dev.asiglesias.infrastructure.grocerylist.controllers.dto.ProductDTO;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

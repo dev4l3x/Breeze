@@ -1,11 +1,11 @@
-package dev.asiglesias.infrastructure.repository.implementation;
+package dev.asiglesias.infrastructure.notion.repositories;
 
 import dev.asiglesias.domain.GroceryList;
 import dev.asiglesias.domain.Ingredient;
 import dev.asiglesias.domain.User;
 import dev.asiglesias.domain.repository.GroceryListRepository;
-import dev.asiglesias.infrastructure.rest.client.notion.NotionHttpClient;
-import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionGroceryPage;
+import dev.asiglesias.infrastructure.notion.client.NotionHttpClient;
+import dev.asiglesias.infrastructure.notion.client.dto.NotionGroceryPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;

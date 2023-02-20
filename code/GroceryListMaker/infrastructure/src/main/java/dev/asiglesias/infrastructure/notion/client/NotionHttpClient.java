@@ -1,4 +1,4 @@
-package dev.asiglesias.infrastructure.rest.client.notion;
+package dev.asiglesias.infrastructure.notion.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +8,7 @@ import dev.asiglesias.application.auth.services.AuthenticationContext;
 import dev.asiglesias.application.auth.services.EncryptionService;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.NotionConfigurationMongoRepository;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.entities.NotionConfiguration;
-import dev.asiglesias.infrastructure.rest.client.notion.dto.*;
+import dev.asiglesias.infrastructure.notion.client.dto.*;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -224,7 +224,7 @@ public class NotionHttpClient {
 
             String accessToken = jsonMapper.readTree(response.body()).get("access_token").textValue();
             String duplicatedPageId = jsonMapper.readTree(response.body()).get("duplicated_template_id").textValue();
-            List<NotionObject> children = getChildrenOfPage(duplicatedPageId);
+            List<NotionObject> children = getChildrenOfPage(duplicatedPageId, accessToken);
 
             String groceryListId = children.stream()
                     .filter(n -> n.name().equals("Grocery List"))
@@ -244,9 +244,10 @@ public class NotionHttpClient {
         return Optional.empty();
     }
 
-    private List<NotionObject> getChildrenOfPage(String pageId) {
-        HttpRequest request = buildAuthenticatedHttpRequest(String.format("blocks/%s/children", pageId))
+    private List<NotionObject> getChildrenOfPage(String pageId, String token) {
+        HttpRequest request = buildHttpRequest(String.format("blocks/%s/children", pageId))
                 .GET()
+                .header(AUTHORIZATION_HEADER, "Bearer " + token)
                 .build();
 
         try {
@@ -256,7 +257,8 @@ public class NotionHttpClient {
 
             jsonMapper.readTree(response.body()).withArray("results").elements().forEachRemaining((jsonNode) -> {
                 String id = jsonNode.get("id").asText();
-                String name = jsonNode.get("child_page").get("title").asText();
+                String name = jsonNode.get("child_page") == null ?
+                        jsonNode.get("child_database").get("title").asText(): jsonNode.get("child_page").get("title").asText();
                 pages.add(new NotionObject(id, name));
             });
 

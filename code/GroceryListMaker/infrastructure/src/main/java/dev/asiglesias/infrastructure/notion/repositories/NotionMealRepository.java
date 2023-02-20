@@ -1,10 +1,10 @@
-package dev.asiglesias.infrastructure.repository.implementation;
+package dev.asiglesias.infrastructure.notion.repositories;
 
 import dev.asiglesias.domain.*;
 import dev.asiglesias.domain.repository.MealRepository;
-import dev.asiglesias.infrastructure.rest.client.notion.NotionHttpClient;
-import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionIngredient;
-import dev.asiglesias.infrastructure.rest.client.notion.dto.NotionMeal;
+import dev.asiglesias.infrastructure.notion.client.NotionHttpClient;
+import dev.asiglesias.infrastructure.notion.client.dto.NotionIngredient;
+import dev.asiglesias.infrastructure.notion.client.dto.NotionMeal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,6 @@
 <html>
     <body>
         <h1>Hi!</h1>
-        <a href="https://api.notion.com/v1/oauth/authorize?client_id=e31754de-dcd8-4af4-a999-40fa11435ddf&response_type=code&owner=user">Connect to Notion</a>
+        <a th:href="@{{notion_uri}/oauth/authorize?client_id=e31754de-dcd8-4af4-a999-40fa11435ddf&response_type=code&owner=user(notion_uri=${notion_uri})}">Connect to Notion</a>
     </body>
 </html>

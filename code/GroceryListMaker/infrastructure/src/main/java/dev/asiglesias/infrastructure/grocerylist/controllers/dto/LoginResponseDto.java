@@ -1,4 +1,4 @@
-package dev.asiglesias.infrastructure.rest.v1.dto;
+package dev.asiglesias.infrastructure.grocerylist.controllers.dto;
 
 import lombok.Builder;
 import lombok.Data;

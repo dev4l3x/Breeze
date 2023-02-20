@@ -1,4 +1,4 @@
-package dev.asiglesias.infrastructure.rest.client.notion.dto;
+package dev.asiglesias.infrastructure.notion.client.dto;
 
 import lombok.Getter;
 

@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/v1/oauth/token"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "access_token": "access_token",
+      "duplicated_template_id": "template_id"
+    }
+  }
+}

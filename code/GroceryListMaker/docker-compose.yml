@@ -1,21 +1,5 @@
 version: "3.9"
 services:
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mongo
-    environment:
-      PORT: 8080
-      JWT_SECRET: ${JWT_SECRET}
-      MONGO_USERNAME: ${MONGO_APP_USERNAME}
-      MONGO_PASSWORD: ${MONGO_APP_PASSWORD}
-      MONGO_HOST: ${MONGO_HOST}
-      NOTION_CLIENT_SECRET: ${NOTION_CLIENT_SECRET}
-      NOTION_CLIENT_ID: ${NOTION_CLIENT_ID}
-      AES_SECRET: ${AES_SECRET}
-
   mongo:
     image: mongo
     volumes:

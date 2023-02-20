@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/v1/oauth/authorize?client_id=e31754de-dcd8-4af4-a999-40fa11435ddf&response_type=code&owner=user"
+  },
+  "response": {
+    "status": 302,
+    "headers": {
+      "Location": "http://localhost/notion/configuration?code=testcode"
+    },
+    "jsonBody": {
+      "access_token": "access_token",
+      "duplicated_template_id": "template_id"
+    }
+  }
+}

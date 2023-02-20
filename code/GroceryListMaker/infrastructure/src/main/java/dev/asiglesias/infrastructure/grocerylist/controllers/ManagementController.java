@@ -1,4 +1,4 @@
-package dev.asiglesias.infrastructure.rest.v1;
+package dev.asiglesias.infrastructure.grocerylist.controllers;
 
 import dev.asiglesias.application.GenerateGroceryListUseCase;
 import dev.asiglesias.application.GenerateGroceryListUseCaseImpl;

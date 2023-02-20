@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  notion:
+    image: wiremock/wiremock
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./infrastructure/src/main/resources/wiremock:/home/wiremock
