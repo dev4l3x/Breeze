@@ -262,6 +262,8 @@ public class NotionHttpClient {
                 pages.add(new NotionObject(id, name));
             });
 
+            log.info(response.body());
+
             return pages;
 
         } catch (Exception exception) {
