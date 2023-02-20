@@ -250,7 +250,7 @@ public class NotionHttpClient {
                 .header(AUTHORIZATION_HEADER, "Bearer " + token)
                 .build();
 
-        log.trace(request.toString());
+        log.info(request.toString());
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
