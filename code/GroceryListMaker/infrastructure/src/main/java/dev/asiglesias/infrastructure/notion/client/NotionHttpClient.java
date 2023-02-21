@@ -89,12 +89,13 @@ public class NotionHttpClient {
                 .header(CONTENT_TYPE, "application/json");
     }
 
+    @SneakyThrows
     public List<NotionMeal> getMealsForUser() {
         NotionConfiguration configuration = notionConfigurationMongoRepository
                 .findByUsername(authenticationContext.getUsername()).orElseThrow();
 
         if (configuration.getMealPlanDatabaseId() == null) {
-            NotionObject mealPage = findObjectWithName("This Week", "database").orElseThrow();
+            NotionObject mealPage = findObjectWithName("This Week", NotionObjectType.DATABASE).orElseThrow();
             configuration.setMealPlanDatabaseId(mealPage.id());
             notionConfigurationMongoRepository.save(configuration);
         }
@@ -103,78 +104,67 @@ public class NotionHttpClient {
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
-        try {
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = performRequest(request);
 
-            Spliterator<JsonNode> results = jsonMapper.readTree(response.body()).withArray("results").spliterator();
+        Spliterator<JsonNode> results = jsonMapper.readTree(response.body()).withArray("results").spliterator();
 
-            return StreamSupport.stream(results, false)
-                    .map(page -> page.findValue("properties"))
-                    .map(pageProperties -> {
+        return StreamSupport.stream(results, false)
+                .map(page -> page.findValue("properties"))
+                .map(pageProperties -> {
 
-                        ArrayNode recipesIds = jsonMapper.createArrayNode();
+                    ArrayNode recipesIds = jsonMapper.createArrayNode();
 
-                        ArrayNode dinnerRecipesIds =
-                                pageProperties.get("Dinner").withArray("relation");
-                        ArrayNode lunchRecipesIds =
-                                pageProperties.findValue("Lunch").withArray("relation");
+                    ArrayNode dinnerRecipesIds =
+                            pageProperties.get("Dinner").withArray("relation");
+                    ArrayNode lunchRecipesIds =
+                            pageProperties.findValue("Lunch").withArray("relation");
 
-                        int dinnerMealQuantity =
-                                pageProperties.get("Dinner Quantity").get("number").asInt(1);
-                        int lunchMealQuantity =
-                                pageProperties.get("Lunch Quantity").get("number").asInt(1);
+                    int dinnerMealQuantity =
+                            pageProperties.get("Dinner Quantity").get("number").asInt(1);
+                    int lunchMealQuantity =
+                            pageProperties.get("Lunch Quantity").get("number").asInt(1);
 
-                        IntStream.range(0, dinnerMealQuantity).forEach((i) -> recipesIds.addAll(dinnerRecipesIds));
-                        IntStream.range(0, lunchMealQuantity).forEach((i) -> recipesIds.addAll(lunchRecipesIds));
+                    IntStream.range(0, dinnerMealQuantity).forEach((i) -> recipesIds.addAll(dinnerRecipesIds));
+                    IntStream.range(0, lunchMealQuantity).forEach((i) -> recipesIds.addAll(lunchRecipesIds));
 
-                        return recipesIds;
-                    })
-                    .map(mealRecipeNodes -> {
-                        List<String> mealRecipeIds = StreamSupport.stream(mealRecipeNodes.spliterator(), false)
-                                .filter(node -> node.has("id"))
-                                .map((node) -> node.get("id").asText()).collect(Collectors.toList());
-                        return new NotionMeal(mealRecipeIds);
-                    })
-                    .filter((notionMeal -> !notionMeal.getRecipeIds().isEmpty()))
-                    .collect(Collectors.toList());
+                    return recipesIds;
+                })
+                .map(mealRecipeNodes -> {
+                    List<String> mealRecipeIds = StreamSupport.stream(mealRecipeNodes.spliterator(), false)
+                            .filter(node -> node.has("id"))
+                            .map((node) -> node.get("id").asText()).collect(Collectors.toList());
+                    return new NotionMeal(mealRecipeIds);
+                })
+                .filter((notionMeal -> !notionMeal.getRecipeIds().isEmpty()))
+                .collect(Collectors.toList());
 
 
-        } catch (Exception exception) {
-            log.error("An error has occurred while trying to get meals");
-            return Collections.emptyList();
-        }
     }
 
+    @SneakyThrows
     public List<NotionIngredient> getIngredientsForRecipe(String recipeId) {
         HttpRequest request = buildAuthenticatedHttpRequest(String.format("pages/%s/properties/%s", recipeId, ingredientsId))
                 .GET()
                 .build();
 
-        try {
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = performRequest(request);
 
-            String results = jsonMapper.readTree(response.body()).withArray("results").get(0)
-                    .get("rich_text").get("plain_text").asText();
+        String results = jsonMapper.readTree(response.body()).withArray("results").get(0)
+                .get("rich_text").get("plain_text").asText();
 
-            return Stream.of(results)
-                    .filter(ingredients -> !ingredients.isBlank())
-                    .flatMap((ingredients) -> Arrays.stream(ingredients.split(", ")))
-                    .map((ingredient) -> {
-                        String[] quantityAndNameIngredient = ingredient.split("-");
-                        String quantity = quantityAndNameIngredient.length > 1
-                                ? quantityAndNameIngredient[0] : "";
-                        String name = quantityAndNameIngredient.length > 1
-                                ? quantityAndNameIngredient[1] : quantityAndNameIngredient[0];
-                        return new NotionIngredient(quantity, name);
-                    })
-                    .collect(Collectors.toList());
+        return Stream.of(results)
+                .filter(ingredients -> !ingredients.isBlank())
+                .flatMap((ingredients) -> Arrays.stream(ingredients.split(", ")))
+                .map((ingredient) -> {
+                    String[] quantityAndNameIngredient = ingredient.split("-");
+                    String quantity = quantityAndNameIngredient.length > 1
+                            ? quantityAndNameIngredient[0] : "";
+                    String name = quantityAndNameIngredient.length > 1
+                            ? quantityAndNameIngredient[1] : quantityAndNameIngredient[0];
+                    return new NotionIngredient(quantity, name);
+                })
+                .collect(Collectors.toList());
 
-
-        } catch (Exception exception) {
-            log.error("An error has occurred while trying to get meals");
-            log.error(exception.toString());
-            return Collections.emptyList();
-        }
     }
 
     public void createGroceryListPage(NotionGroceryPage page) {
@@ -184,21 +174,15 @@ public class NotionHttpClient {
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
-        try {
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            HttpStatus status = HttpStatus.valueOf(response.statusCode());
+        HttpResponse<String> response = performRequest(request);
+        HttpStatus status = HttpStatus.valueOf(response.statusCode());
 
-            if (status.isError()) {
-                log.error("Notion HTTP Client error while saving grocery list: {}", response.body());
-            } else {
-                log.trace("Grocery List created successfully");
-            }
-
-        } catch (Exception exception) {
-            log.error("An error has occurred while trying to save grocery list, Error: {}", exception.toString());
+        if (status.isError()) {
+            log.error("Notion HTTP Client error while saving grocery list: {}", response.body());
+        } else {
+            log.trace("Grocery List created successfully");
         }
-
     }
 
     @SneakyThrows
@@ -207,41 +191,50 @@ public class NotionHttpClient {
         body.put("grant_type", "authorization_code");
         body.put("code", code);
 
-        String basicAuthentication = String.format("%s:%s", clientId, clientSecret);
-        String basicAuthToken = Base64.getEncoder()
-                .encodeToString(basicAuthentication.getBytes(StandardCharsets.UTF_8));
+        String basicAuthToken = getBasicAuthenticationToken();
 
         HttpRequest request = buildHttpRequest("oauth/token")
-                .header(AUTHORIZATION_HEADER, "Basic " + basicAuthToken)
+                .header(AUTHORIZATION_HEADER, basicAuthToken)
                 .POST(HttpRequest.BodyPublishers.ofString(jsonMapper.writeValueAsString(body)))
                 .build();
 
-        try {
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            HttpStatus status = HttpStatus.valueOf(response.statusCode());
+        HttpResponse<String> response = performRequest(request);
+        HttpStatus status = HttpStatus.valueOf(response.statusCode());
 
-            if (status.isError()) {
-                log.error("Notion HTTP Client error while retrieving access token: {}", response.body());
-            }
-
-            String accessToken = jsonMapper.readTree(response.body()).get("access_token").textValue();
-            String duplicatedPageId = jsonMapper.readTree(response.body()).get("duplicated_template_id").textValue();
-
-            return Optional.of(new NotionUserInfo(accessToken, duplicatedPageId));
-        } catch (Exception ex) {
-            log.error("An error has occurred while trying to obtain access token");
+        if (status.isError()) {
+            log.error("Notion HTTP Client error while retrieving access token: {}", response.body());
         }
-        return Optional.empty();
+
+        String accessToken = jsonMapper.readTree(response.body()).get("access_token").textValue();
+        String duplicatedPageId = jsonMapper.readTree(response.body()).get("duplicated_template_id").textValue();
+
+        return Optional.of(new NotionUserInfo(accessToken, duplicatedPageId));
+    }
+
+    private HttpResponse<String> performRequest(HttpRequest request) {
+        try {
+            return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (Exception ex) {
+            log.error("An error has occurred while performing request for {}", request.uri());
+            return null;
+        }
+    }
+
+    private String getBasicAuthenticationToken() {
+        String basicAuthentication = String.format("%s:%s", clientId, clientSecret);
+        String basicAuthToken = Base64.getEncoder()
+                .encodeToString(basicAuthentication.getBytes(StandardCharsets.UTF_8));
+        return "Basic " + basicAuthToken;
     }
 
     @SneakyThrows
-    public Optional<NotionObject> findObjectWithName(String name, String objectType) {
+    public Optional<NotionObject> findObjectWithName(String name, NotionObjectType objectType) {
 
         ObjectNode body = jsonMapper.createObjectNode();
         body.put("query", name);
 
         ObjectNode filterNode = body.putObject("filter");
-        filterNode.put("value", objectType);
+        filterNode.put("value", objectType.getName());
         filterNode.put("property", "object");
 
         HttpRequest request = buildAuthenticatedHttpRequest("search")
@@ -263,65 +256,6 @@ public class NotionHttpClient {
         }
     }
 
-    public Optional<NotionObject> getGroceryListNotionPage() {
-        Optional<NotionConfiguration> notionConfiguration = notionConfigurationMongoRepository
-                .findByUsername(authenticationContext.getUsername());
-
-        if (notionConfiguration.isEmpty()) {
-            throw new RuntimeException("Notion is not configured");
-        }
-
-        List<NotionObject> children = getChildrenOfPage(notionConfiguration.get().getMealPageId());
-
-        return children.stream()
-                .filter(n -> n.name().equals("Grocery List"))
-                .findAny();
-    }
-
-    public Optional<NotionObject> getMealPlannerNotionPage() {
-        Optional<NotionConfiguration> notionConfiguration = notionConfigurationMongoRepository
-                .findByUsername(authenticationContext.getUsername());
-
-        if (notionConfiguration.isEmpty()) {
-            throw new RuntimeException("Notion is not configured");
-        }
-
-        List<NotionObject> children = getChildrenOfPage(notionConfiguration.get().getMealPageId());
-
-        return children.stream()
-                .filter(n -> n.name().equals("Meal Planner"))
-                .findAny();
-    }
-
-    private List<NotionObject> getChildrenOfPage(String pageId) {
-        HttpRequest request = buildAuthenticatedHttpRequest(String.format("blocks/%s/children", pageId))
-                .GET()
-                .build();
-
-        log.info(request.toString());
-        try {
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            List<NotionObject> pages = new ArrayList<>();
-
-            jsonMapper.readTree(response.body()).withArray("results").elements().forEachRemaining((jsonNode) -> {
-                String id = jsonNode.get("id").asText();
-                String name = jsonNode.get("child_page") == null ?
-                        jsonNode.get("child_database").get("title").asText(): jsonNode.get("child_page").get("title").asText();
-                pages.add(new NotionObject(id, name));
-            });
-
-            log.info(response.body());
-
-            return pages;
-
-        } catch (Exception exception) {
-            log.error("An error has occurred while trying to get meals");
-            log.error(exception.toString());
-            return Collections.emptyList();
-        }
-    }
-
     @SneakyThrows
     private String getGroceryPageAsJson(NotionGroceryPage page) {
 
@@ -329,7 +263,7 @@ public class NotionHttpClient {
                 .findByUsername(authenticationContext.getUsername()).orElseThrow();
 
         if (configuration.getGroceryListDatabaseId() == null) {
-            NotionObject groceryList = findObjectWithName("Grocery List", "database").orElseThrow();
+            NotionObject groceryList = findObjectWithName("Grocery List", NotionObjectType.DATABASE).orElseThrow();
             configuration.setMealPlanDatabaseId(groceryList.id());
             notionConfigurationMongoRepository.save(configuration);
         }
