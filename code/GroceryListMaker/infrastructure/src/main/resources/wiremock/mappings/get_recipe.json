@@ -1,0 +1,113 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/v1/pages/18b6205d-62ae-4946-a1fb-04845dde22c9"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "object": "page",
+      "id": "b245dfc0-4191-430e-8fda-dd01df194578",
+      "created_time": "2023-02-21T09:12:00.000Z",
+      "last_edited_time": "2023-02-21T09:12:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "c22d452d-f1a4-4f6d-97f4-3d0fe285de41"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "c22d452d-f1a4-4f6d-97f4-3d0fe285de41"
+      },
+      "cover": null,
+      "icon": {
+        "type": "emoji",
+        "emoji": "🥘"
+      },
+      "parent": {
+        "type": "database_id",
+        "database_id": "99563231-61f9-4670-b66c-a2ab2274edc4"
+      },
+      "archived": true,
+      "properties": {
+        "Property": {
+          "id": "GHye",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "Date": {
+          "id": "nl~G",
+          "type": "date",
+          "date": null
+        },
+        "Related to This Week (Meals)": {
+          "id": "q%3B%5Er",
+          "type": "relation",
+          "relation": [
+            {
+              "id": "c460dba8-86ef-4f3b-a6d4-041f24e8efba"
+            }
+          ],
+          "has_more": false
+        },
+        "Related to This Week (Dinner)": {
+          "id": "th%60E",
+          "type": "relation",
+          "relation": [],
+          "has_more": false
+        },
+        "Link": {
+          "id": "xe1%3F",
+          "type": "url",
+          "url": null
+        },
+        "Ingredients": {
+          "id": "ymgk",
+          "type": "rich_text",
+          "rich_text": [
+            {
+              "type": "text",
+              "text": {
+                "content": "Aceite, 0.2-Cebolla, 0.2-Pimiento rojo, Ajo, 45g-Pechuga de pollo, Pimentón ahumado, Cúrcuma, 0.4-Tomate, 75g-Arroz, Caldo de pollo, 26g-Guisantes, Perejil",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "Aceite, 0.2-Cebolla, 0.2-Pimiento rojo, Ajo, 45g-Pechuga de pollo, Pimentón ahumado, Cúrcuma, 0.4-Tomate, 75g-Arroz, Caldo de pollo, 26g-Guisantes, Perejil",
+              "href": null
+            }
+          ]
+        },
+        "Recipe": {
+          "id": "title",
+          "type": "title",
+          "title": [
+            {
+              "type": "text",
+              "text": {
+                "content": "Paella libre",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "Paella libre",
+              "href": null
+            }
+          ]
+        }
+      },
+      "url": "https://www.notion.so/Paella-libre-b245dfc04191430e8fdadd01df194578"
+    }
+  }
+}

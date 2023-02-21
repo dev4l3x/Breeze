@@ -1,0 +1,114 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/v1/search",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "query": "This Week",
+          "filter": {
+            "value": "database",
+            "property": "object"
+          }
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "object": "list",
+      "results": [
+        {
+          "object": "database",
+          "id": "675b8860-d49d-4fca-97d5-41f3689cee7b",
+          "cover": null,
+          "icon": null,
+          "created_time": "2023-02-21T14:00:00.000Z",
+          "created_by": {
+            "object": "user",
+            "id": "c22d452d-f1a4-4f6d-97f4-3d0fe285de41"
+          },
+          "last_edited_by": {
+            "object": "user",
+            "id": "c22d452d-f1a4-4f6d-97f4-3d0fe285de41"
+          },
+          "last_edited_time": "2023-02-21T14:00:00.000Z",
+          "title": [
+            {
+              "type": "text",
+              "text": {
+                "content": "This Week",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "This Week",
+              "href": null
+            }
+          ],
+          "description": [],
+          "is_inline": true,
+          "properties": {
+            "Dinner Servings": {
+              "id": "G%3EUe",
+              "name": "Dinner Servings",
+              "type": "number",
+              "number": {
+                "format": "number"
+              }
+            },
+            "Dinner": {
+              "id": "Mf%3B~",
+              "name": "Dinner",
+              "type": "relation",
+              "relation": {
+                "database_id": "d4847908-90b1-4a3c-b2ec-2d723e13838d",
+                "synced_property_name": "Related to This Week (Dinner)",
+                "synced_property_id": "th`E"
+              }
+            },
+            "Lunch Servings": {
+              "id": "iYVQ",
+              "name": "Lunch Servings",
+              "type": "number",
+              "number": {
+                "format": "number"
+              }
+            },
+            "Lunch": {
+              "id": "%7BO%3BM",
+              "name": "Lunch",
+              "type": "relation",
+              "relation": {
+                "database_id": "d4847908-90b1-4a3c-b2ec-2d723e13838d",
+                "synced_property_name": "Related to This Week (Meals)",
+                "synced_property_id": "q;^r"
+              }
+            },
+            "Name": {
+              "id": "title",
+              "name": "Name",
+              "type": "title",
+              "title": {}
+            }
+          },
+          "parent": {
+            "type": "page_id",
+            "page_id": "a151f013-46c0-4a61-99e6-246a4848e85e"
+          },
+          "url": "https://www.notion.so/675b8860d49d4fca97d541f3689cee7b",
+          "archived": false
+        }
+      ],
+      "next_cursor": null,
+      "has_more": false
+    }
+  }
+}
