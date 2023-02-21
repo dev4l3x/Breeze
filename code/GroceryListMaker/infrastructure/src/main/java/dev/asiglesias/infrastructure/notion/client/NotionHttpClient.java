@@ -37,6 +37,10 @@ public class NotionHttpClient {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String NOTION_VERSION_HEADER = "Notion-Version";
     public static final String CONTENT_TYPE = "Content-Type";
+    public static final String APPLICATION_JSON_TYPE = "application/json";
+    public static final String MEAL_PANNING_DB_NAME = "This Week";
+    public static final String BASIC_TOKEN = "Basic";
+    public static final String GROCERY_LIST_DB_NAME = "Grocery List";
 
     private final HttpClient httpClient;
 
@@ -53,9 +57,6 @@ public class NotionHttpClient {
 
     @Value("${notion.version}")
     private String notionVersion;
-
-    @Value("${notion.ingredients-property-id}")
-    private String ingredientsId;
 
     @Value("${notion.clientid}")
     private String clientId;
@@ -88,7 +89,7 @@ public class NotionHttpClient {
         return HttpRequest.newBuilder()
                 .uri(URI.create(String.format("%s/%s", notionBaseUri, relativePath)))
                 .header(NOTION_VERSION_HEADER, notionVersion)
-                .header(CONTENT_TYPE, "application/json");
+                .header(CONTENT_TYPE, APPLICATION_JSON_TYPE);
     }
 
     @SneakyThrows
@@ -97,7 +98,7 @@ public class NotionHttpClient {
                 .findByUsername(authenticationContext.getUsername()).orElseThrow();
 
         if (configuration.getMealPlanDatabaseId() == null) {
-            NotionObject mealPage = findObjectWithName("This Week", NotionObjectType.DATABASE).orElseThrow();
+            NotionObject mealPage = findObjectWithName(MEAL_PANNING_DB_NAME, NotionObjectType.DATABASE).orElseThrow();
             configuration.setMealPlanDatabaseId(mealPage.id());
             notionConfigurationMongoRepository.save(configuration);
         }
@@ -110,20 +111,22 @@ public class NotionHttpClient {
 
         Meals meals = jsonMapper.readValue(response.body(), Meals.class);
 
-        return meals.getResults().stream().map(result -> {
-            List<String> dinnerRecipes = result.getProperties().getDinner().getRelation().stream()
-                    .map(Relation::getId)
-                    .collect(Collectors.toList());
+        return meals.getResults().stream().map(this::toNotionMeal).collect(Collectors.toList());
+    }
 
-            List<String> lunchRecipes = result.getProperties().getLunch().getRelation().stream()
-                    .map(Relation::getId)
-                    .collect(Collectors.toList());
+    private NotionMeal toNotionMeal(Result result) {
+        List<String> dinnerRecipes = result.getProperties().getDinner().getRelation().stream()
+                .map(Relation::getId)
+                .collect(Collectors.toList());
 
-            int dinnerServings = result.getProperties().getDinnerServings().getNumber();
-            int lunchServings = result.getProperties().getLunchServings().getNumber();
+        List<String> lunchRecipes = result.getProperties().getLunch().getRelation().stream()
+                .map(Relation::getId)
+                .collect(Collectors.toList());
 
-            return new NotionMeal(dinnerRecipes, lunchRecipes, dinnerServings, lunchServings);
-        }).collect(Collectors.toList());
+        int dinnerServings = result.getProperties().getDinnerServings().getNumber();
+        int lunchServings = result.getProperties().getLunchServings().getNumber();
+
+        return new NotionMeal(dinnerRecipes, lunchRecipes, dinnerServings, lunchServings);
     }
 
     @SneakyThrows
@@ -139,6 +142,11 @@ public class NotionHttpClient {
         String concatenatedIngredients =
                 recipe.getProperties().getIngredients().getRichText().stream().findAny().map(RichText::getPlainText).orElse("");
 
+        return getNotionIngredientsFromConcatenatedString(concatenatedIngredients);
+
+    }
+
+    private List<NotionIngredient> getNotionIngredientsFromConcatenatedString(String concatenatedIngredients) {
         return Arrays.stream(concatenatedIngredients.split(", "))
                 .map((ingredient) -> {
                     String[] quantityAndNameIngredient = ingredient.split("-");
@@ -149,7 +157,6 @@ public class NotionHttpClient {
                     return new NotionIngredient(quantity, name);
                 })
                 .collect(Collectors.toList());
-
     }
 
     public void createGroceryListPage(NotionGroceryPage page) {
@@ -209,7 +216,7 @@ public class NotionHttpClient {
         String basicAuthentication = String.format("%s:%s", clientId, clientSecret);
         String basicAuthToken = Base64.getEncoder()
                 .encodeToString(basicAuthentication.getBytes(StandardCharsets.UTF_8));
-        return "Basic " + basicAuthToken;
+        return String.format("%s %s", BASIC_TOKEN, basicAuthToken);
     }
 
     @SneakyThrows
@@ -248,7 +255,7 @@ public class NotionHttpClient {
                 .findByUsername(authenticationContext.getUsername()).orElseThrow();
 
         if (configuration.getGroceryListDatabaseId() == null) {
-            NotionObject groceryList = findObjectWithName("Grocery List", NotionObjectType.DATABASE).orElseThrow();
+            NotionObject groceryList = findObjectWithName(GROCERY_LIST_DB_NAME, NotionObjectType.DATABASE).orElseThrow();
             configuration.setGroceryListDatabaseId(groceryList.id());
             notionConfigurationMongoRepository.save(configuration);
         }
