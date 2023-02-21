@@ -21,10 +21,4 @@ public class RestExceptionHandler {
         return ResponseEntity.internalServerError().body(error);
     }
 
-    @ExceptionHandler(value = {Exception.class})
-    public ResponseEntity<ErrorDTO> handleException(Exception ex) {
-        ErrorDTO error = new ErrorDTO("INTERNAL", "An error has occurred");
-        return ResponseEntity.internalServerError().body(error);
-    }
-
 }

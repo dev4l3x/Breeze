@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface NotionConfigurationMongoRepository extends MongoRepository<NotionConfiguration, String> {
     Optional<NotionConfiguration> findByUsername(String username);
+    boolean existsByUsername(String username);
 }
