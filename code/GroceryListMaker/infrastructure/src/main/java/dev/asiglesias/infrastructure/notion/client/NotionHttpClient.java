@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import dev.asiglesias.application.auth.services.AuthenticationContext;
 import dev.asiglesias.application.auth.services.EncryptionService;
+import dev.asiglesias.infrastructure.TechnicalException;
 import dev.asiglesias.infrastructure.notion.client.dto.*;
 import dev.asiglesias.infrastructure.notion.client.dto.recipe.Recipe;
 import dev.asiglesias.infrastructure.notion.client.dto.recipe.RichText;
@@ -77,7 +78,7 @@ public class NotionHttpClient {
         String userId = authenticationContext.getUsername();
         Optional<NotionConfiguration> notionConfiguration = notionConfigurationMongoRepository.findByUsername(userId);
         if (notionConfiguration.isEmpty()) {
-            throw new RuntimeException("No notion configuration for user " + userId);
+            throw new TechnicalException("NOTION_NOT_CONFIGURED", "No notion configuration for user " + userId);
         }
         String decryptedToken = encryptionService.decrypt(notionConfiguration.get().getSecret());
 

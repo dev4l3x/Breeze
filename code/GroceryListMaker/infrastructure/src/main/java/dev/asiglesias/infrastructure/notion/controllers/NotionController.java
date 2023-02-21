@@ -1,6 +1,7 @@
 package dev.asiglesias.infrastructure.notion.controllers;
 
 import dev.asiglesias.application.auth.services.EncryptionService;
+import dev.asiglesias.infrastructure.TechnicalException;
 import dev.asiglesias.infrastructure.notion.client.NotionHttpClient;
 import dev.asiglesias.infrastructure.notion.client.dto.NotionUserInfo;
 import dev.asiglesias.infrastructure.notion.controllers.dto.NotionSecretDTO;
@@ -54,7 +55,7 @@ public class NotionController {
         Optional<NotionUserInfo> notionUserInfo = notionHttpClient.getAccessTokenForCode(code);
 
         if (notionUserInfo.isEmpty()) {
-            throw new RuntimeException("Unable to get token for Notion with provided code");
+            throw new TechnicalException("NOTION_NOT_CONFIGURED", "Unable to get token for Notion with provided code");
         }
 
         Optional<NotionConfiguration> configuration = notionConfigurationMongoRepository.findByUsername(username);
