@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import dev.asiglesias.application.auth.services.AuthenticationContext;
 import dev.asiglesias.application.auth.services.EncryptionService;
+import dev.asiglesias.infrastructure.notion.client.dto.*;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.NotionConfigurationMongoRepository;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.entities.NotionConfiguration;
-import dev.asiglesias.infrastructure.notion.client.dto.*;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,11 +21,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 
 @Component
@@ -100,45 +101,28 @@ public class NotionHttpClient {
             notionConfigurationMongoRepository.save(configuration);
         }
 
-        HttpRequest request = buildAuthenticatedHttpRequest(String.format("databases/%s/query", configuration.getMealPageId()))
+        HttpRequest request = buildAuthenticatedHttpRequest(String.format("databases/%s/query", configuration.getMealPlanDatabaseId()))
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
         HttpResponse<String> response = performRequest(request);
 
-        Spliterator<JsonNode> results = jsonMapper.readTree(response.body()).withArray("results").spliterator();
+        Meals meals = jsonMapper.readValue(response.body(), Meals.class);
 
-        return StreamSupport.stream(results, false)
-                .map(page -> page.findValue("properties"))
-                .map(pageProperties -> {
+        return meals.getResults().stream().map(result -> {
+            List<String> dinnerRecipes = result.getProperties().getDinner().getRelation().stream()
+                    .map(Relation::getId)
+                    .collect(Collectors.toList());
 
-                    ArrayNode recipesIds = jsonMapper.createArrayNode();
+            List<String> lunchRecipes = result.getProperties().getLunch().getRelation().stream()
+                    .map(Relation::getId)
+                    .collect(Collectors.toList());
 
-                    ArrayNode dinnerRecipesIds =
-                            pageProperties.get("Dinner").withArray("relation");
-                    ArrayNode lunchRecipesIds =
-                            pageProperties.findValue("Lunch").withArray("relation");
+            int dinnerQuantity = result.getProperties().getDinnerQuantity().getNumber();
+            int lunchQuantity = result.getProperties().getLunchQuantity().getNumber();
 
-                    int dinnerMealQuantity =
-                            pageProperties.get("Dinner Quantity").get("number").asInt(1);
-                    int lunchMealQuantity =
-                            pageProperties.get("Lunch Quantity").get("number").asInt(1);
-
-                    IntStream.range(0, dinnerMealQuantity).forEach((i) -> recipesIds.addAll(dinnerRecipesIds));
-                    IntStream.range(0, lunchMealQuantity).forEach((i) -> recipesIds.addAll(lunchRecipesIds));
-
-                    return recipesIds;
-                })
-                .map(mealRecipeNodes -> {
-                    List<String> mealRecipeIds = StreamSupport.stream(mealRecipeNodes.spliterator(), false)
-                            .filter(node -> node.has("id"))
-                            .map((node) -> node.get("id").asText()).collect(Collectors.toList());
-                    return new NotionMeal(mealRecipeIds);
-                })
-                .filter((notionMeal -> !notionMeal.getRecipeIds().isEmpty()))
-                .collect(Collectors.toList());
-
-
+            return new NotionMeal(dinnerRecipes, lunchRecipes, dinnerQuantity, lunchQuantity);
+        }).collect(Collectors.toList());
     }
 
     @SneakyThrows
@@ -264,7 +248,7 @@ public class NotionHttpClient {
 
         if (configuration.getGroceryListDatabaseId() == null) {
             NotionObject groceryList = findObjectWithName("Grocery List", NotionObjectType.DATABASE).orElseThrow();
-            configuration.setMealPlanDatabaseId(groceryList.id());
+            configuration.setGroceryListDatabaseId(groceryList.id());
             notionConfigurationMongoRepository.save(configuration);
         }
 

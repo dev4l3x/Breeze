@@ -1,6 +1,6 @@
 package dev.asiglesias.infrastructure.repository.implementation;
 
-import dev.asiglesias.domain.Meal;
+import dev.asiglesias.domain.Recipe;
 import dev.asiglesias.domain.MeasureUnit;
 import dev.asiglesias.infrastructure.notion.client.NotionHttpClient;
 import dev.asiglesias.infrastructure.notion.client.dto.NotionIngredient;
@@ -46,10 +46,10 @@ class NotionMealRepositoryTest {
         when(httpClient.getMealsForUser()).thenReturn(null);
 
         //Act
-        List<Meal> meals = mealRepository.getMealsForUser(null);
+        List<Recipe> recipes = mealRepository.getMealsForUser(null);
 
         //Assert
-        assertThat(meals).isEmpty();
+        assertThat(recipes).isEmpty();
     }
 
     @Test
@@ -58,28 +58,28 @@ class NotionMealRepositoryTest {
         when(httpClient.getMealsForUser()).thenReturn(Collections.emptyList());
 
         //Act
-        List<Meal> meals = mealRepository.getMealsForUser(null);
+        List<Recipe> recipes = mealRepository.getMealsForUser(null);
 
         //Assert
-        assertThat(meals).isEmpty();
+        assertThat(recipes).isEmpty();
     }
 
     @Test
     void givenClientReturnsMeals_whenGetMeals_thenReturnMealsRetrievedFromClient() {
         //Arrange
         List<String> recipesIds = List.of("id1", "id2");
-        NotionMeal notionMeal = new NotionMeal(recipesIds);
+        NotionMeal notionMeal = new NotionMeal(recipesIds, recipesIds, 1, 1);
 
         when(httpClient.getMealsForUser()).thenReturn(List.of(notionMeal));
         when(httpClient.getIngredientsForRecipe(anyString()))
                 .thenReturn(List.of(new NotionIngredient("120g", "Rice")));
 
         //Act
-        List<Meal> meals = mealRepository.getMealsForUser(null);
+        List<Recipe> recipes = mealRepository.getMealsForUser(null);
 
         //Assert
-        assertThat(meals).isNotEmpty().hasSize(2);
-        assertThat(meals).allMatch((meal) ->
+        assertThat(recipes).isNotEmpty().hasSize(2);
+        assertThat(recipes).allMatch((meal) ->
                 meal.getIngredients().stream().allMatch(
                         i -> i.getQuantity() == 120
                                 && i.getProduct().getName().equals("Rice")
@@ -92,19 +92,19 @@ class NotionMealRepositoryTest {
     void givenClientReturnsMealsThatHasIngredientsWithNullQuantity_whenGetMeals_thenSetQuantityToZero() {
         //Arrange
         List<String> recipesIds = List.of("id1");
-        NotionMeal notionMeal = new NotionMeal(recipesIds);
+        NotionMeal notionMeal = new NotionMeal(recipesIds, recipesIds, 1, 1);
 
         when(httpClient.getMealsForUser()).thenReturn(List.of(notionMeal));
         when(httpClient.getIngredientsForRecipe(anyString()))
                 .thenReturn(List.of(new NotionIngredient(null, "Rice")));
 
         //Act
-        List<Meal> meals = mealRepository.getMealsForUser(null);
+        List<Recipe> recipes = mealRepository.getMealsForUser(null);
 
         //Assert
-        assertThat(meals).isNotEmpty().hasSize(1);
-        Meal meal = meals.get(0);
-        assertThat(meal.getIngredients())
+        assertThat(recipes).isNotEmpty().hasSize(1);
+        Recipe recipe = recipes.get(0);
+        assertThat(recipe.getIngredients())
                 .isNotEmpty()
                 .hasSize(1)
                 .allMatch(i -> i.getQuantity() == 0 && i.getUnit().equals(MeasureUnit.piece()));
@@ -116,7 +116,7 @@ class NotionMealRepositoryTest {
     void givenClientReturnsMealsThatHasIngredientWithInvalidName_whenGetMeals_thenIgnoreIngredient(String name) {
         //Arrange
         List<String> recipesIds = List.of("id1");
-        NotionMeal notionMeal = new NotionMeal(recipesIds);
+        NotionMeal notionMeal = new NotionMeal(recipesIds, recipesIds, 1, 1);
 
         when(httpClient.getMealsForUser()).thenReturn(List.of(notionMeal));
         when(httpClient.getIngredientsForRecipe(anyString()))
@@ -126,12 +126,12 @@ class NotionMealRepositoryTest {
                 ));
 
         //Act
-        List<Meal> meals = mealRepository.getMealsForUser(null);
+        List<Recipe> recipes = mealRepository.getMealsForUser(null);
 
         //Assert
-        assertThat(meals).isNotEmpty().hasSize(1);
-        Meal meal = meals.get(0);
-        assertThat(meal.getIngredients())
+        assertThat(recipes).isNotEmpty().hasSize(1);
+        Recipe recipe = recipes.get(0);
+        assertThat(recipe.getIngredients())
                 .hasSize(1)
                 .allMatch((i) -> i.getProduct().getName().equals("Rice"));
     }
@@ -140,19 +140,19 @@ class NotionMealRepositoryTest {
     void givenClientReturnsMealsThatHasIngredientWithoutUnit_whenGetMeals_thenSetPieceAsDefault() {
         //Arrange
         List<String> recipesIds = List.of("id1");
-        NotionMeal notionMeal = new NotionMeal(recipesIds);
+        NotionMeal notionMeal = new NotionMeal(recipesIds, recipesIds, 1, 1);
 
         when(httpClient.getMealsForUser()).thenReturn(List.of(notionMeal));
         when(httpClient.getIngredientsForRecipe(anyString()))
                 .thenReturn(List.of(new NotionIngredient("120", "Rice")));
 
         //Act
-        List<Meal> meals = mealRepository.getMealsForUser(null);
+        List<Recipe> recipes = mealRepository.getMealsForUser(null);
 
         //Assert
-        assertThat(meals).isNotEmpty().hasSize(1);
-        Meal meal = meals.get(0);
-        assertThat(meal.getIngredients())
+        assertThat(recipes).isNotEmpty().hasSize(1);
+        Recipe recipe = recipes.get(0);
+        assertThat(recipe.getIngredients())
                 .hasSize(1)
                 .allMatch((i) -> i.getUnit().equals(MeasureUnit.piece()));
     }
@@ -161,15 +161,15 @@ class NotionMealRepositoryTest {
     void givenClientReturnsMealsWithoutIngredients_whenGetMeals_thenIgnoreMeals() {
         //Arrange
         List<String> recipesIds = Collections.emptyList();
-        NotionMeal notionMeal = new NotionMeal(recipesIds);
+        NotionMeal notionMeal = new NotionMeal(recipesIds, recipesIds, 1, 1);
 
         when(httpClient.getMealsForUser()).thenReturn(List.of(notionMeal));
 
         //Act
-        List<Meal> meals = mealRepository.getMealsForUser(null);
+        List<Recipe> recipes = mealRepository.getMealsForUser(null);
 
         //Assert
         verify(httpClient, never()).getIngredientsForRecipe(anyString());
-        assertThat(meals).isEmpty();
+        assertThat(recipes).isEmpty();
     }
 }

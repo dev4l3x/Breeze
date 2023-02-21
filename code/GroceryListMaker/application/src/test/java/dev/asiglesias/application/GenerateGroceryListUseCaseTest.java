@@ -45,12 +45,12 @@ class GenerateGroceryListUseCaseTest {
         Ingredient twoTomatoes = Ingredient.builder().quantity(2).unit(MeasureUnit.piece()).product(tomato).build();
         Ingredient aggregatedTomato = Ingredient.builder().quantity(3).unit(MeasureUnit.piece()).product(tomato).build();
 
-        Meal mealWithOneTomato = new Meal(Collections.singletonList(oneTomato));
-        Meal mealWithTwoTomatoes = new Meal(Collections.singletonList(twoTomatoes));
+        Recipe recipeWithOneTomato = new Recipe(Collections.singletonList(oneTomato), 1);
+        Recipe recipeWithTwoTomatoes = new Recipe(Collections.singletonList(twoTomatoes), 1);
 
         User user = new User("test", "teest");
 
-        when(mealRepository.getMealsForUser(user)).thenReturn(List.of(mealWithOneTomato, mealWithTwoTomatoes));
+        when(mealRepository.getMealsForUser(user)).thenReturn(List.of(recipeWithOneTomato, recipeWithTwoTomatoes));
         when(aggregatorService.aggregate(anyList())).thenReturn(List.of(aggregatedTomato));
 
         //Act

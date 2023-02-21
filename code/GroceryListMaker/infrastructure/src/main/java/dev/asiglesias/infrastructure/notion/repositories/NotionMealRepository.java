@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class NotionMealRepository implements MealRepository {
     private final NotionHttpClient notionHttpClient;
 
     @Override
-    public List<Meal> getMealsForUser(User user) {
+    public List<Recipe> getMealsForUser(User user) {
         List<NotionMeal> meals = notionHttpClient.getMealsForUser();
 
         if (Objects.isNull(meals)) {
@@ -29,36 +30,38 @@ public class NotionMealRepository implements MealRepository {
         }
 
         //We get the ingredients with distinct here to save request
-        Map<String, List<NotionIngredient>> ingredientsByRecipe = meals.stream()
-            .flatMap(meal -> meal.getRecipeIds().stream()).distinct()
+        Map<String, List<Ingredient>> ingredientsByRecipe = meals.stream()
+            .flatMap(meal -> Stream.concat(meal.getDinnerRecipes().stream(), meal.getLunchRecipes().stream())).distinct()
             .map((recipeId) -> {
                 List<NotionIngredient> ingredients = notionHttpClient.getIngredientsForRecipe(recipeId);
-                int multiplyIngredientsBy = numberOfRecipesWithId(meals, recipeId);
-                List<NotionIngredient> allIngredientsNeeded =
-                        Collections.nCopies(multiplyIngredientsBy, ingredients).stream().flatMap(List::stream).collect(Collectors.toList());
-                return Map.entry(recipeId, allIngredientsNeeded);
+                return Map.entry(recipeId, ingredients.stream().map(this::getIngredientFromNotionIngredient).collect(Collectors.toList()));
             })
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
-        return mapRecipesToDomainMeals(ingredientsByRecipe);
+        Map<String, Integer> recipeQuantity = new HashMap<>();
+
+         meals.forEach(meal -> {
+                    meal.getDinnerRecipes().forEach(dinnerRecipe -> {
+                        if (!recipeQuantity.containsKey(dinnerRecipe)) {
+                            recipeQuantity.put(dinnerRecipe, 0);
+                        }
+                        recipeQuantity.put(dinnerRecipe, recipeQuantity.get(dinnerRecipe) + meal.getDinnerQuantity());
+                    });
+                    meal.getLunchRecipes().forEach(lunchRecipe -> {
+                        if (!recipeQuantity.containsKey(lunchRecipe)) {
+                            recipeQuantity.put(lunchRecipe, 0);
+                        }
+                        recipeQuantity.put(lunchRecipe, recipeQuantity.get(lunchRecipe) + meal.getDinnerQuantity());
+                    });
+                });
+
+        return mapRecipesToDomainMeals(recipeQuantity, ingredientsByRecipe);
     }
 
-    private int numberOfRecipesWithId(List<NotionMeal> meals, String recipeId) {
-        return (int) meals.stream()
-                .flatMap(meal -> meal.getRecipeIds().stream())
-                .filter(recipeId::equals).count();
-    }
-
-    private List<Meal> mapRecipesToDomainMeals(Map<String, List<NotionIngredient>> ingredientsByRepice) {
-        return ingredientsByRepice.values().stream()
-            .map((ingredients) ->
-                    ingredients.stream()
-                            .filter(ingredient -> Objects.nonNull(ingredient.getName()) && !ingredient.getName().isBlank())
-                            .map(this::getIngredientFromNotionIngredient)
-                            .collect(Collectors.toList())
-            )
-                .filter(ingredients -> !ingredients.isEmpty())
-                .map(Meal::new)
+    private List<Recipe> mapRecipesToDomainMeals(Map<String, Integer> recipesWithQuantity,
+                                                 Map<String, List<Ingredient>> ingredientsByRecipe) {
+        return recipesWithQuantity.keySet().stream()
+                .map(recipe -> new Recipe(ingredientsByRecipe.get(recipe), recipesWithQuantity.get(recipe)))
                 .collect(Collectors.toList());
     }
 

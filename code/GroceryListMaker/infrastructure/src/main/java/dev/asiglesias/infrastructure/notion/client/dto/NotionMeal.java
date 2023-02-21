@@ -8,5 +8,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class NotionMeal {
-    List<String> recipeIds;
+    List<String> dinnerRecipes;
+    List<String> lunchRecipes;
+    int dinnerQuantity;
+    int lunchQuantity;
 }

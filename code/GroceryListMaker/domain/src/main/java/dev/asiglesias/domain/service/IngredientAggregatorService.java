@@ -3,11 +3,20 @@ package dev.asiglesias.domain.service;
 import dev.asiglesias.domain.Ingredient;
 import dev.asiglesias.domain.MeasureUnit;
 import dev.asiglesias.domain.Product;
+import dev.asiglesias.domain.Recipe;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class IngredientAggregatorService {
+
+    public List<Ingredient> aggregateRecipes(List<Recipe> recipes) {
+        List<Ingredient> ingredients = recipes.stream()
+                .flatMap(recipe -> recipe.getIngredients().stream().map(ingredient -> ingredient.multiplyQuantityBy(recipe.getQuantity())))
+                .collect(Collectors.toList());
+
+        return aggregate(ingredients);
+    }
 
     public List<Ingredient> aggregate(List<Ingredient> ingredients) {
         List<Product> allProducts = getAllProductsFromIngredients(ingredients);

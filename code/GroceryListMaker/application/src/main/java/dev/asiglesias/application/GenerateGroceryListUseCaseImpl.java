@@ -2,7 +2,7 @@ package dev.asiglesias.application;
 
 import dev.asiglesias.domain.GroceryList;
 import dev.asiglesias.domain.Ingredient;
-import dev.asiglesias.domain.Meal;
+import dev.asiglesias.domain.Recipe;
 import dev.asiglesias.domain.User;
 import dev.asiglesias.domain.repository.GroceryListRepository;
 import dev.asiglesias.domain.repository.MealRepository;
@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class GenerateGroceryListUseCaseImpl implements GenerateGroceryListUseCase {
@@ -24,13 +23,9 @@ public class GenerateGroceryListUseCaseImpl implements GenerateGroceryListUseCas
 
     @Override
     public void generateForUser(User user) {
-        List<Meal> mealsForUser = mealRepository.getMealsForUser(user);
+        List<Recipe> mealsForUser = mealRepository.getMealsForUser(user);
 
-        List<Ingredient> allIngredients = mealsForUser.stream()
-                .flatMap(meal -> meal.getIngredients().stream())
-                .collect(Collectors.toList());
-
-        List<Ingredient> aggregatedIngredients = aggregatorService.aggregate(allIngredients);
+        List<Ingredient> aggregatedIngredients = aggregatorService.aggregateRecipes(mealsForUser);
 
         GroceryList list = new GroceryList(OffsetDateTime.now(), aggregatedIngredients);
 
