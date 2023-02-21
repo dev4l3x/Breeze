@@ -1,11 +1,11 @@
 package dev.asiglesias.infrastructure.notion.controllers;
 
 import dev.asiglesias.application.auth.services.EncryptionService;
+import dev.asiglesias.infrastructure.notion.client.NotionHttpClient;
+import dev.asiglesias.infrastructure.notion.client.dto.NotionUserInfo;
 import dev.asiglesias.infrastructure.notion.controllers.dto.NotionSecretDTO;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.NotionConfigurationMongoRepository;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.entities.NotionConfiguration;
-import dev.asiglesias.infrastructure.notion.client.NotionHttpClient;
-import dev.asiglesias.infrastructure.notion.client.dto.NotionUserInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,10 +57,6 @@ public class NotionController {
             throw new RuntimeException("Unable to get token for Notion with provided code");
         }
 
-        if (notionUserInfo.get().groceryListId() == null || notionUserInfo.get().mealPlanId() == null) {
-            throw new RuntimeException("Could not configure notion because grocery list or meal planner page not found");
-        }
-
         Optional<NotionConfiguration> configuration = notionConfigurationMongoRepository.findByUsername(username);
 
         if (configuration.isEmpty()) {
@@ -71,8 +67,6 @@ public class NotionController {
 
         configuration.get().setSecret(encryptionService.encrypt(notionUserInfo.get().token()));
         configuration.get().setMealPageId(notionUserInfo.get().duplicatedPageId());
-        configuration.get().setMealPlanDatabaseId(notionUserInfo.get().mealPlanId());
-        configuration.get().setGroceryListDatabaseId(notionUserInfo.get().groceryListId());
 
         notionConfigurationMongoRepository.save(configuration.get());
 

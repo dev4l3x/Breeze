@@ -49,17 +49,11 @@ public class NotionHttpClient {
     @Value("${notion.baseuri}")
     private String notionBaseUri;
 
-    @Value("${notion.mealdbid}")
-    private String mealDatabaseId;
-
     @Value("${notion.version}")
     private String notionVersion;
 
     @Value("${notion.ingredients-property-id}")
     private String ingredientsId;
-
-    @Value("${notion.grocerylistdb}")
-    private String groceryListId;
 
     @Value("${notion.clientid}")
     private String clientId;
@@ -96,7 +90,16 @@ public class NotionHttpClient {
     }
 
     public List<NotionMeal> getMealsForUser() {
-        HttpRequest request = buildAuthenticatedHttpRequest(String.format("databases/%s/query", mealDatabaseId))
+        NotionConfiguration configuration = notionConfigurationMongoRepository
+                .findByUsername(authenticationContext.getUsername()).orElseThrow();
+
+        if (configuration.getMealPlanDatabaseId() == null) {
+            NotionObject mealPage = findObjectWithName("This Week", "database").orElseThrow();
+            configuration.setMealPlanDatabaseId(mealPage.id());
+            notionConfigurationMongoRepository.save(configuration);
+        }
+
+        HttpRequest request = buildAuthenticatedHttpRequest(String.format("databases/%s/query", configuration.getMealPageId()))
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -175,7 +178,6 @@ public class NotionHttpClient {
     }
 
     public void createGroceryListPage(NotionGroceryPage page) {
-
         String body = getGroceryPageAsJson(page);
 
         HttpRequest request = buildAuthenticatedHttpRequest("pages")
@@ -224,30 +226,76 @@ public class NotionHttpClient {
 
             String accessToken = jsonMapper.readTree(response.body()).get("access_token").textValue();
             String duplicatedPageId = jsonMapper.readTree(response.body()).get("duplicated_template_id").textValue();
-            List<NotionObject> children = getChildrenOfPage(duplicatedPageId, accessToken);
 
-            String groceryListId = children.stream()
-                    .filter(n -> n.name().equals("Grocery List"))
-                    .findAny()
-                    .map(NotionObject::id)
-                    .orElse(null);
-            String mealPlanId = children.stream()
-                    .filter(n -> n.name().equals("Meal Planner"))
-                    .findAny()
-                    .map(NotionObject::id)
-                    .orElse(null);
-
-            return Optional.of(new NotionUserInfo(accessToken, duplicatedPageId, groceryListId, mealPlanId));
+            return Optional.of(new NotionUserInfo(accessToken, duplicatedPageId));
         } catch (Exception ex) {
             log.error("An error has occurred while trying to obtain access token");
         }
         return Optional.empty();
     }
 
-    private List<NotionObject> getChildrenOfPage(String pageId, String token) {
-        HttpRequest request = buildHttpRequest(String.format("blocks/%s/children", pageId))
+    @SneakyThrows
+    public Optional<NotionObject> findObjectWithName(String name, String objectType) {
+
+        ObjectNode body = jsonMapper.createObjectNode();
+        body.put("query", name);
+
+        ObjectNode filterNode = body.putObject("filter");
+        filterNode.put("value", objectType);
+        filterNode.put("property", "object");
+
+        HttpRequest request = buildAuthenticatedHttpRequest("search")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonMapper.writeValueAsString(body)))
+                .build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            JsonNode page = jsonMapper.readTree(response.body()).withArray("results").iterator().next();
+
+            String id = page.get("id").asText();
+
+            return Optional.of(new NotionObject(id, name));
+
+        } catch (Exception exception) {
+            log.error("An error has occurred while trying to get meals");
+            return Optional.empty();
+        }
+    }
+
+    public Optional<NotionObject> getGroceryListNotionPage() {
+        Optional<NotionConfiguration> notionConfiguration = notionConfigurationMongoRepository
+                .findByUsername(authenticationContext.getUsername());
+
+        if (notionConfiguration.isEmpty()) {
+            throw new RuntimeException("Notion is not configured");
+        }
+
+        List<NotionObject> children = getChildrenOfPage(notionConfiguration.get().getMealPageId());
+
+        return children.stream()
+                .filter(n -> n.name().equals("Grocery List"))
+                .findAny();
+    }
+
+    public Optional<NotionObject> getMealPlannerNotionPage() {
+        Optional<NotionConfiguration> notionConfiguration = notionConfigurationMongoRepository
+                .findByUsername(authenticationContext.getUsername());
+
+        if (notionConfiguration.isEmpty()) {
+            throw new RuntimeException("Notion is not configured");
+        }
+
+        List<NotionObject> children = getChildrenOfPage(notionConfiguration.get().getMealPageId());
+
+        return children.stream()
+                .filter(n -> n.name().equals("Meal Planner"))
+                .findAny();
+    }
+
+    private List<NotionObject> getChildrenOfPage(String pageId) {
+        HttpRequest request = buildAuthenticatedHttpRequest(String.format("blocks/%s/children", pageId))
                 .GET()
-                .header(AUTHORIZATION_HEADER, "Bearer " + token)
                 .build();
 
         log.info(request.toString());
@@ -277,8 +325,17 @@ public class NotionHttpClient {
     @SneakyThrows
     private String getGroceryPageAsJson(NotionGroceryPage page) {
 
+        NotionConfiguration configuration = notionConfigurationMongoRepository
+                .findByUsername(authenticationContext.getUsername()).orElseThrow();
+
+        if (configuration.getGroceryListDatabaseId() == null) {
+            NotionObject groceryList = findObjectWithName("Grocery List", "database").orElseThrow();
+            configuration.setMealPlanDatabaseId(groceryList.id());
+            notionConfigurationMongoRepository.save(configuration);
+        }
+
         ObjectNode databaseId = jsonMapper.createObjectNode();
-        databaseId.put("database_id", groceryListId);
+        databaseId.put("database_id", configuration.getGroceryListDatabaseId());
 
 
         ObjectNode dateNode = getDatePropertyNode(page.getDate().format(DateTimeFormatter.ISO_DATE));
