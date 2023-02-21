@@ -46,7 +46,7 @@ public class AuthenticationWebController {
         Cookie cookie = new Cookie("access_token", jwt);
 
         servletResponse.addCookie(cookie);
-        servletResponse.sendRedirect("/index");
+        servletResponse.sendRedirect("/");
     }
 
 }

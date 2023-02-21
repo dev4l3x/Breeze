@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class NotionMeal {
+public class NotionDay {
     List<String> dinnerRecipes;
     List<String> lunchRecipes;
     int dinnerServings;

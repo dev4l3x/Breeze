@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("grocery-list")
-public class ManagementController {
+public class GroceryListController {
 
     private final GenerateGroceryListUseCase generateGroceryListUseCase;
 
 
-    public ManagementController(MealRepository mealRepository, GroceryListRepository groceryListRepository,
-                                UserRepository userRepository, AuthenticationContext authenticationContext) {
+    public GroceryListController(MealRepository mealRepository, GroceryListRepository groceryListRepository,
+                                 UserRepository userRepository, AuthenticationContext authenticationContext) {
 
         IngredientAggregatorService aggregatorService = new IngredientAggregatorService();
         generateGroceryListUseCase =

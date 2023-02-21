@@ -1,5 +1,6 @@
 package dev.asiglesias.infrastructure.repository.implementation;
 
+import dev.asiglesias.domain.GroceryList;
 import dev.asiglesias.domain.Ingredient;
 import dev.asiglesias.domain.MeasureUnit;
 import dev.asiglesias.domain.Product;
@@ -38,7 +39,7 @@ class NotionGroceryListRepositoryTest {
         List<Ingredient> ingredients = List.of(ingredient);
 
         //Act
-        notionGroceryListRepository.createForUser(null, null);
+        notionGroceryListRepository.create(new GroceryList(null, ingredients));
 
         //Assert
         verify(httpClient).createGroceryListPage(
@@ -52,7 +53,7 @@ class NotionGroceryListRepositoryTest {
         List<Ingredient> ingredients = null;
 
         //Act
-        notionGroceryListRepository.createForUser(null, null);
+        notionGroceryListRepository.create(new GroceryList(null, ingredients));
 
         //Assert
         verify(httpClient, never()).createGroceryListPage(any());
@@ -64,7 +65,7 @@ class NotionGroceryListRepositoryTest {
         List<Ingredient> ingredients = Collections.emptyList();
 
         //Act
-        notionGroceryListRepository.createForUser(null, null);
+        notionGroceryListRepository.create(new GroceryList(null, ingredients));
 
         //Assert
         verify(httpClient, never()).createGroceryListPage(any());

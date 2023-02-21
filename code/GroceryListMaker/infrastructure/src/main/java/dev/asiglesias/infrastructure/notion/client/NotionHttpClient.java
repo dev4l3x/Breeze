@@ -94,7 +94,7 @@ public class NotionHttpClient {
     }
 
     @SneakyThrows
-    public List<NotionMeal> getMealsForUser() {
+    public List<NotionDay> getMealsForUser() {
         NotionConfiguration configuration = notionConfigurationMongoRepository
                 .findByUsername(authenticationContext.getUsername()).orElseThrow();
 
@@ -115,7 +115,7 @@ public class NotionHttpClient {
         return meals.getResults().stream().map(this::toNotionMeal).collect(Collectors.toList());
     }
 
-    private NotionMeal toNotionMeal(Result result) {
+    private NotionDay toNotionMeal(Result result) {
         List<String> dinnerRecipes = result.getProperties().getDinner().getRelation().stream()
                 .map(Relation::getId)
                 .collect(Collectors.toList());
@@ -127,7 +127,7 @@ public class NotionHttpClient {
         int dinnerServings = result.getProperties().getDinnerServings().getNumber();
         int lunchServings = result.getProperties().getLunchServings().getNumber();
 
-        return new NotionMeal(dinnerRecipes, lunchRecipes, dinnerServings, lunchServings);
+        return new NotionDay(dinnerRecipes, lunchRecipes, dinnerServings, lunchServings);
     }
 
     @SneakyThrows

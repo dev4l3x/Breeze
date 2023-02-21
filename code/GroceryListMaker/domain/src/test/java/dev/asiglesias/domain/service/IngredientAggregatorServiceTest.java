@@ -1,6 +1,7 @@
 package dev.asiglesias.domain.service;
 
 import dev.asiglesias.domain.Ingredient;
+import dev.asiglesias.domain.Meal;
 import dev.asiglesias.domain.MeasureUnit;
 import dev.asiglesias.domain.Product;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class IngredientAggregatorServiceTest {
 
     IngredientAggregatorService aggregatorService = new IngredientAggregatorService();
+
+    @Test
+    void givenMealsWithQuantities_whenAggregateMeals_thenReturnAggregatedIngredients() {
+        //Arrange
+        Product product = new Product("tomato");
+        Ingredient firstTomato = Ingredient.builder().quantity(1).unit(MeasureUnit.piece()).product(product).build();
+        Ingredient secondTomato = Ingredient.builder().quantity(1).unit(MeasureUnit.piece()).product(product).build();
+        Meal firstMeal = new Meal(List.of(firstTomato), 2);
+        Meal secondMeal = new Meal(List.of(secondTomato), 2);
+
+        //Act
+        List<Ingredient> ingredients = aggregatorService.aggregateMeals(List.of(firstMeal, secondMeal));
+
+        //Assert
+        assertThat(ingredients).hasSize(1);
+        assertEquals(4, ingredients.get(0).getQuantity());
+        assertEquals(product, ingredients.get(0).getProduct());
+    }
 
     @Test
     void givenIngredientsWithSameProduct_whenAggregate_thenReturnOneProductWithAggregatedQuantities() {

@@ -4,7 +4,7 @@ import dev.asiglesias.domain.Meal;
 import dev.asiglesias.domain.MeasureUnit;
 import dev.asiglesias.infrastructure.notion.client.NotionHttpClient;
 import dev.asiglesias.infrastructure.notion.client.dto.NotionIngredient;
-import dev.asiglesias.infrastructure.notion.client.dto.NotionMeal;
+import dev.asiglesias.infrastructure.notion.client.dto.NotionDay;
 import dev.asiglesias.infrastructure.notion.repositories.NotionMealRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,9 +68,9 @@ class NotionMealRepositoryTest {
     void givenClientReturnsMeals_whenGetMeals_thenReturnMealsRetrievedFromClient() {
         //Arrange
         List<String> recipesIds = List.of("id1", "id2");
-        NotionMeal notionMeal = new NotionMeal(recipesIds, recipesIds, 1, 1);
+        NotionDay notionDay = new NotionDay(recipesIds, recipesIds, 1, 1);
 
-        when(httpClient.getMealsForUser()).thenReturn(List.of(notionMeal));
+        when(httpClient.getMealsForUser()).thenReturn(List.of(notionDay));
         when(httpClient.getIngredientsForRecipe(anyString()))
                 .thenReturn(List.of(new NotionIngredient("120g", "Rice")));
 
@@ -92,9 +92,9 @@ class NotionMealRepositoryTest {
     void givenClientReturnsMealsThatHasIngredientsWithNullQuantity_whenGetMeals_thenSetQuantityToZero() {
         //Arrange
         List<String> recipesIds = List.of("id1");
-        NotionMeal notionMeal = new NotionMeal(recipesIds, recipesIds, 1, 1);
+        NotionDay notionDay = new NotionDay(recipesIds, recipesIds, 1, 1);
 
-        when(httpClient.getMealsForUser()).thenReturn(List.of(notionMeal));
+        when(httpClient.getMealsForUser()).thenReturn(List.of(notionDay));
         when(httpClient.getIngredientsForRecipe(anyString()))
                 .thenReturn(List.of(new NotionIngredient(null, "Rice")));
 
@@ -116,9 +116,9 @@ class NotionMealRepositoryTest {
     void givenClientReturnsMealsThatHasIngredientWithInvalidName_whenGetMeals_thenIgnoreIngredient(String name) {
         //Arrange
         List<String> recipesIds = List.of("id1");
-        NotionMeal notionMeal = new NotionMeal(recipesIds, recipesIds, 1, 1);
+        NotionDay notionDay = new NotionDay(recipesIds, recipesIds, 1, 1);
 
-        when(httpClient.getMealsForUser()).thenReturn(List.of(notionMeal));
+        when(httpClient.getMealsForUser()).thenReturn(List.of(notionDay));
         when(httpClient.getIngredientsForRecipe(anyString()))
                 .thenReturn(List.of(
                         new NotionIngredient("120g", name),
@@ -140,9 +140,9 @@ class NotionMealRepositoryTest {
     void givenClientReturnsMealsThatHasIngredientWithoutUnit_whenGetMeals_thenSetPieceAsDefault() {
         //Arrange
         List<String> recipesIds = List.of("id1");
-        NotionMeal notionMeal = new NotionMeal(recipesIds, recipesIds, 1, 1);
+        NotionDay notionDay = new NotionDay(recipesIds, recipesIds, 1, 1);
 
-        when(httpClient.getMealsForUser()).thenReturn(List.of(notionMeal));
+        when(httpClient.getMealsForUser()).thenReturn(List.of(notionDay));
         when(httpClient.getIngredientsForRecipe(anyString()))
                 .thenReturn(List.of(new NotionIngredient("120", "Rice")));
 
@@ -161,9 +161,9 @@ class NotionMealRepositoryTest {
     void givenClientReturnsMealsWithoutIngredients_whenGetMeals_thenIgnoreMeals() {
         //Arrange
         List<String> recipesIds = Collections.emptyList();
-        NotionMeal notionMeal = new NotionMeal(recipesIds, recipesIds, 1, 1);
+        NotionDay notionDay = new NotionDay(recipesIds, recipesIds, 1, 1);
 
-        when(httpClient.getMealsForUser()).thenReturn(List.of(notionMeal));
+        when(httpClient.getMealsForUser()).thenReturn(List.of(notionDay));
 
         //Act
         List<Meal> meals = mealRepository.getMealsForUser(null);

@@ -86,7 +86,7 @@ class SignInUserUseCaseTest {
                 .build();
 
         when(userRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(user));
-        when(encodingService.encode(TEST_PASSWORD)).thenReturn("invalid_password");
+        when(encodingService.matches(TEST_PASSWORD, ENCRYPTED_PASSWORD)).thenReturn(false);
 
         //Act && Assert
         assertThrows(InvalidParameterException.class, () -> signInUserUseCase.signIn(userDataContainer));
@@ -105,7 +105,7 @@ class SignInUserUseCaseTest {
                 .build();
 
         when(userRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(user));
-        when(encodingService.encode(TEST_PASSWORD)).thenReturn(ENCRYPTED_PASSWORD);
+        when(encodingService.matches(TEST_PASSWORD, ENCRYPTED_PASSWORD)).thenReturn(true);
         when(tokenService.createTokenForUsername(user.getUsername())).thenReturn(TEST_TOKEN);
 
         //Act

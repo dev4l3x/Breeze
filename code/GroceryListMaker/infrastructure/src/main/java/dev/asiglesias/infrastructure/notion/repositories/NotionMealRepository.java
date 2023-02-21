@@ -4,7 +4,7 @@ import dev.asiglesias.domain.*;
 import dev.asiglesias.domain.repository.MealRepository;
 import dev.asiglesias.infrastructure.notion.client.NotionHttpClient;
 import dev.asiglesias.infrastructure.notion.client.dto.NotionIngredient;
-import dev.asiglesias.infrastructure.notion.client.dto.NotionMeal;
+import dev.asiglesias.infrastructure.notion.client.dto.NotionDay;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -23,21 +23,20 @@ public class NotionMealRepository implements MealRepository {
 
     @Override
     public List<Meal> getMealsForUser(User user) {
-        List<NotionMeal> meals = notionHttpClient.getMealsForUser();
+        List<NotionDay> days = notionHttpClient.getMealsForUser();
 
-        if (Objects.isNull(meals)) {
+        if (Objects.isNull(days)) {
             return Collections.emptyList();
         }
 
-        //We get the ingredients with distinct here to save request
-        Map<String, List<Ingredient>> ingredientsByRecipe = getIngredientsForRecipes(meals);
+        Map<String, List<Ingredient>> ingredientsByRecipe = getIngredientsForRecipes(days);
 
-        Map<String, Integer> totalServingsPerRecipe = getTotalServingsPerRecipe(meals);
+        Map<String, Integer> totalServingsPerRecipe = getTotalServingsPerRecipe(days);
 
         return mapRecipesToDomainMeals(totalServingsPerRecipe, ingredientsByRecipe);
     }
 
-    private Map<String, Integer> getTotalServingsPerRecipe(List<NotionMeal> meals) {
+    private Map<String, Integer> getTotalServingsPerRecipe(List<NotionDay> meals) {
         Map<String, Integer> recipeServings = new HashMap<>();
 
         meals.forEach(meal -> {
@@ -57,11 +56,14 @@ public class NotionMealRepository implements MealRepository {
         return recipeServings;
     }
 
-    private Map<String, List<Ingredient>> getIngredientsForRecipes(List<NotionMeal> meals) {
+    private Map<String, List<Ingredient>> getIngredientsForRecipes(List<NotionDay> meals) {
         return meals.stream()
             .flatMap(meal -> Stream.concat(meal.getDinnerRecipes().stream(), meal.getLunchRecipes().stream())).distinct()
             .map((recipeId) -> {
-                List<NotionIngredient> ingredients = notionHttpClient.getIngredientsForRecipe(recipeId);
+                List<NotionIngredient> ingredients = notionHttpClient.getIngredientsForRecipe(recipeId)
+                        .stream()
+                        .filter(notionIngredient -> Objects.nonNull(notionIngredient.getName()) && !notionIngredient.getName().isBlank())
+                        .collect(Collectors.toList());
                 return Map.entry(recipeId, ingredients.stream().map(this::getIngredientFromNotionIngredient).collect(Collectors.toList()));
             })
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));

@@ -45,6 +45,6 @@ public class GenerateGroceryListUseCaseImpl implements GenerateGroceryListUseCas
 
         GroceryList list = new GroceryList(OffsetDateTime.now(), neededIngredientsForMeals);
 
-        groceryListRepository.createForUser(list, user.get());
+        groceryListRepository.create(list);
     }
 }
