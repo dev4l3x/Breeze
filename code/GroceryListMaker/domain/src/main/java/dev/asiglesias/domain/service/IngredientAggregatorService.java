@@ -3,16 +3,16 @@ package dev.asiglesias.domain.service;
 import dev.asiglesias.domain.Ingredient;
 import dev.asiglesias.domain.MeasureUnit;
 import dev.asiglesias.domain.Product;
-import dev.asiglesias.domain.Recipe;
+import dev.asiglesias.domain.Meal;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class IngredientAggregatorService {
 
-    public List<Ingredient> aggregateRecipes(List<Recipe> recipes) {
-        List<Ingredient> ingredients = recipes.stream()
-                .flatMap(recipe -> recipe.getIngredients().stream().map(ingredient -> ingredient.multiplyQuantityBy(recipe.getQuantity())))
+    public List<Ingredient> aggregateMeals(List<Meal> meals) {
+        List<Ingredient> ingredients = meals.stream()
+                .flatMap(recipe -> recipe.getIngredients().stream().map(ingredient -> ingredient.multiplyQuantityBy(recipe.getServings())))
                 .collect(Collectors.toList());
 
         return aggregate(ingredients);

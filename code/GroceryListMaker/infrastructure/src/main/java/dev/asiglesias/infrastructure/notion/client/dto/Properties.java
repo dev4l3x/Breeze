@@ -19,26 +19,26 @@ import java.util.Map;
 public class Properties implements Serializable
 {
 
-    @JsonProperty("Dinner Quantity")
-    private Quantity dinnerQuantity;
+    @JsonProperty("Dinner Servings")
+    private Quantity dinnerServings;
     @JsonProperty("Dinner")
     private Meal dinner;
-    @JsonProperty("Lunch Quantity")
-    private Quantity lunchQuantity;
+    @JsonProperty("Lunch Servings")
+    private Quantity lunchServings;
     @JsonProperty("Lunch")
     private Meal lunch;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
     private final static long serialVersionUID = -6033746548213943504L;
 
-    @JsonProperty("Dinner Quantity")
-    public Quantity getDinnerQuantity() {
-        return dinnerQuantity;
+    @JsonProperty("Dinner Servings")
+    public Quantity getDinnerServings() {
+        return dinnerServings;
     }
 
-    @JsonProperty("Dinner Quantity")
-    public void setDinnerQuantity(Quantity dinnerQuantity) {
-        this.dinnerQuantity = dinnerQuantity;
+    @JsonProperty("Dinner Servings")
+    public void setDinnerServings(Quantity dinnerServings) {
+        this.dinnerServings = dinnerServings;
     }
 
     @JsonProperty("Dinner")
@@ -51,14 +51,14 @@ public class Properties implements Serializable
         this.dinner = dinner;
     }
 
-    @JsonProperty("Lunch Quantity")
-    public Quantity getLunchQuantity() {
-        return lunchQuantity;
+    @JsonProperty("Lunch Servings")
+    public Quantity getLunchServings() {
+        return lunchServings;
     }
 
-    @JsonProperty("Lunch Quantity")
-    public void setLunchQuantity(Quantity lunchQuantity) {
-        this.lunchQuantity = lunchQuantity;
+    @JsonProperty("Lunch Servings")
+    public void setLunchServings(Quantity lunchServings) {
+        this.lunchServings = lunchServings;
     }
 
     @JsonProperty("Lunch")

@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import dev.asiglesias.application.auth.services.AuthenticationContext;
 import dev.asiglesias.application.auth.services.EncryptionService;
 import dev.asiglesias.infrastructure.notion.client.dto.*;
+import dev.asiglesias.infrastructure.notion.client.dto.recipe.Recipe;
+import dev.asiglesias.infrastructure.notion.client.dto.recipe.RichText;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.NotionConfigurationMongoRepository;
 import dev.asiglesias.infrastructure.notion.controllers.repositories.entities.NotionConfiguration;
 import lombok.SneakyThrows;
@@ -26,7 +28,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 @Component
@@ -118,27 +119,27 @@ public class NotionHttpClient {
                     .map(Relation::getId)
                     .collect(Collectors.toList());
 
-            int dinnerQuantity = result.getProperties().getDinnerQuantity().getNumber();
-            int lunchQuantity = result.getProperties().getLunchQuantity().getNumber();
+            int dinnerServings = result.getProperties().getDinnerServings().getNumber();
+            int lunchServings = result.getProperties().getLunchServings().getNumber();
 
-            return new NotionMeal(dinnerRecipes, lunchRecipes, dinnerQuantity, lunchQuantity);
+            return new NotionMeal(dinnerRecipes, lunchRecipes, dinnerServings, lunchServings);
         }).collect(Collectors.toList());
     }
 
     @SneakyThrows
     public List<NotionIngredient> getIngredientsForRecipe(String recipeId) {
-        HttpRequest request = buildAuthenticatedHttpRequest(String.format("pages/%s/properties/%s", recipeId, ingredientsId))
+        HttpRequest request = buildAuthenticatedHttpRequest(String.format("pages/%s", recipeId))
                 .GET()
                 .build();
 
         HttpResponse<String> response = performRequest(request);
 
-        String results = jsonMapper.readTree(response.body()).withArray("results").get(0)
-                .get("rich_text").get("plain_text").asText();
+        Recipe recipe = jsonMapper.readValue(response.body(), Recipe.class);
 
-        return Stream.of(results)
-                .filter(ingredients -> !ingredients.isBlank())
-                .flatMap((ingredients) -> Arrays.stream(ingredients.split(", ")))
+        String concatenatedIngredients =
+                recipe.getProperties().getIngredients().getRichText().stream().findAny().map(RichText::getPlainText).orElse("");
+
+        return Arrays.stream(concatenatedIngredients.split(", "))
                 .map((ingredient) -> {
                     String[] quantityAndNameIngredient = ingredient.split("-");
                     String quantity = quantityAndNameIngredient.length > 1

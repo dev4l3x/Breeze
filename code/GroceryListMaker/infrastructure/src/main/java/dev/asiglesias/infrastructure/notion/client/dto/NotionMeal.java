@@ -10,6 +10,6 @@ import java.util.List;
 public class NotionMeal {
     List<String> dinnerRecipes;
     List<String> lunchRecipes;
-    int dinnerQuantity;
-    int lunchQuantity;
+    int dinnerServings;
+    int lunchServings;
 }

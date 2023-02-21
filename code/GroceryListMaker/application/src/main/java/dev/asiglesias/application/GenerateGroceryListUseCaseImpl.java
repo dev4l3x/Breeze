@@ -2,7 +2,7 @@ package dev.asiglesias.application;
 
 import dev.asiglesias.domain.GroceryList;
 import dev.asiglesias.domain.Ingredient;
-import dev.asiglesias.domain.Recipe;
+import dev.asiglesias.domain.Meal;
 import dev.asiglesias.domain.User;
 import dev.asiglesias.domain.repository.GroceryListRepository;
 import dev.asiglesias.domain.repository.MealRepository;
@@ -23,11 +23,11 @@ public class GenerateGroceryListUseCaseImpl implements GenerateGroceryListUseCas
 
     @Override
     public void generateForUser(User user) {
-        List<Recipe> mealsForUser = mealRepository.getMealsForUser(user);
+        List<Meal> meals = mealRepository.getMealsForUser(user);
 
-        List<Ingredient> aggregatedIngredients = aggregatorService.aggregateRecipes(mealsForUser);
+        List<Ingredient> neededIngredientsForMeals = aggregatorService.aggregateMeals(meals);
 
-        GroceryList list = new GroceryList(OffsetDateTime.now(), aggregatedIngredients);
+        GroceryList list = new GroceryList(OffsetDateTime.now(), neededIngredientsForMeals);
 
         groceryListRepository.createForUser(list, user);
     }

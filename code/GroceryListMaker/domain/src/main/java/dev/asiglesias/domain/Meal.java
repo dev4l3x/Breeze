@@ -5,7 +5,7 @@ import lombok.Value;
 import java.util.List;
 
 @Value
-public class Recipe {
+public class Meal {
     List<Ingredient> ingredients;
-    int quantity;
+    int servings;
 }
