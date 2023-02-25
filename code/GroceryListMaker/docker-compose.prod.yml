@@ -6,8 +6,6 @@ services:
       - "8080:8080"
     depends_on:
       - mongo
-    volumes:
-      - "./maven/.m2:/root/.m2"
     environment:
       PORT: 8080
       JWT_SECRET: ${JWT_SECRET}
