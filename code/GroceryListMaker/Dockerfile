@@ -12,8 +12,9 @@ ADD application/pom.xml /home/application/pom.xml
 RUN mvn verify --fail-never
 
 ADD domain /home/domain
-ADD infrastructure /home/infrastructure
 ADD application /home/application
+ADD infrastructure /home/infrastructure
+RUN npm install /home/infrastructure/src/main/resources/scripts/build
 
 RUN mvn package -DskipTests=true
 EXPOSE 8080
