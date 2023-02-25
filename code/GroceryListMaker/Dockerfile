@@ -1,6 +1,10 @@
 FROM maven
 WORKDIR /home
 
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+RUN apt-get update
+RUN apt-get install nodejs
+
 ADD pom.xml /home
 ADD domain/pom.xml /home/domain/pom.xml
 ADD infrastructure/pom.xml /home/infrastructure/pom.xml
