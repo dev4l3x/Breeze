@@ -2,7 +2,7 @@
   "name": "tailwind",
   "private": true,
   "scripts": {
-    "build": "tailwind -i ./tailwind.css -o ../../static/css/tailwind.css"
+    "build": "tailwindcss -i ./tailwind.css -o ../../static/css/tailwind.css"
   },
   "devDependencies": {
     "tailwindcss": "^3.2.7"
