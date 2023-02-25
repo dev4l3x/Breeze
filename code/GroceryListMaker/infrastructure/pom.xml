@@ -142,7 +142,7 @@
                                 <argument>run</argument>
                                 <argument>build</argument>
                             </arguments>
-                            <workingDirectory>src/main/resources/scripts/build</workingDirectory>
+                            <workingDirectory>${basedir}/src/main/resources/scripts/build</workingDirectory>
                         </configuration>
 
                     </execution>
