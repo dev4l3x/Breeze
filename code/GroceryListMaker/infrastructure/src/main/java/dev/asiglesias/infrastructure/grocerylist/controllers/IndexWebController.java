@@ -15,9 +15,6 @@ public class IndexWebController {
     @Value("${notion.baseuri}")
     private String notionUri;
 
-    @Value("${server.port}")
-    private String port;
-
     @Value("${app.host}")
     private String host;
 
@@ -35,8 +32,7 @@ public class IndexWebController {
 
         model.addAttribute("is_notion_configured", isNotionConfigured);
 
-        String appUri = String.format("%s:%s", host, port);
-        model.addAttribute("app_base_host", appUri);
+        model.addAttribute("app_base_host", host);
 
         return "index";
     }
