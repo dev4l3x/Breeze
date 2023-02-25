@@ -24,10 +24,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -138,6 +135,11 @@ public class NotionHttpClient {
 
         HttpResponse<String> response = performRequest(request);
 
+        if(isHttpStatusError(response.statusCode())) {
+            log.warn("Recipe {} not found. Returning empty ingredients.", recipeId);
+            return Collections.emptyList();
+        }
+
         Recipe recipe = jsonMapper.readValue(response.body(), Recipe.class);
 
         String concatenatedIngredients =
@@ -169,9 +171,8 @@ public class NotionHttpClient {
 
 
         HttpResponse<String> response = performRequest(request);
-        HttpStatus status = HttpStatus.valueOf(response.statusCode());
 
-        if (status.isError()) {
+        if (isHttpStatusError(response.statusCode())) {
             log.error("Notion HTTP Client error while saving grocery list: {}", response.body());
         } else {
             log.trace("Grocery List created successfully");
@@ -319,6 +320,10 @@ public class NotionHttpClient {
         todoChild.set("to_do", todoItemContent);
 
         return todoChild;
+    }
+
+    private boolean isHttpStatusError(int status) {
+        return HttpStatus.valueOf(status).isError();
     }
 
 

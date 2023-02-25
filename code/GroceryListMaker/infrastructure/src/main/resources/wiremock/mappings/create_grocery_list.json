@@ -1,0 +1,9 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/v1/pages"
+  },
+  "response": {
+    "status": 200
+  }
+}

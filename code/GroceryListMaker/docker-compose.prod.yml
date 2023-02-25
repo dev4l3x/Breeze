@@ -16,3 +16,4 @@ services:
       NOTION_CLIENT_ID: ${NOTION_CLIENT_ID}
       NOTION_BASE_URI: https://api.notion.com/v1
       AES_SECRET: ${AES_SECRET}
+      APP_HOST: https://breeze.asiglesias.dev

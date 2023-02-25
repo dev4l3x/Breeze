@@ -27,7 +27,7 @@ public class GroceryListController {
                 new GenerateGroceryListUseCaseImpl(aggregatorService, mealRepository, groceryListRepository, authenticationContext, userRepository);
     }
 
-    @PostMapping("generate")
+    @PostMapping
     public ResponseEntity<Void> generate() {
         generateGroceryListUseCase.generateForUser();
         return ResponseEntity.noContent().build();

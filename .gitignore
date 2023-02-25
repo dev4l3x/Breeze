@@ -163,4 +163,8 @@ buildNumber.properties
 
 .env
 
+**/node_modules
+**/package-lock.json
+**/static/css/tailwind.css
+
 # End of https://www.toptal.com/developers/gitignore/api/java,intellij,maven
