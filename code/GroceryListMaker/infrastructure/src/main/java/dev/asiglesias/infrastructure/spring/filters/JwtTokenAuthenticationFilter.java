@@ -53,9 +53,6 @@ public class JwtTokenAuthenticationFilter implements Filter {
                     List.of(new SimpleGrantedAuthority("USER")));
             SecurityContextHolder.createEmptyContext();
             SecurityContextHolder.getContext().setAuthentication(auth);
-        } else {
-           response.sendRedirect("/signin");
-           return;
         }
 
         filterChain.doFilter(servletRequest, servletResponse);

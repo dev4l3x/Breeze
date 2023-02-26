@@ -1,33 +1,45 @@
 <html>
     <head>
-        <link href="/css/tailwind.css" rel="stylesheet">
-
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="/resources/css/tailwind.css" rel="stylesheet">
+        <link href="/resources/fontawesome/css/fontawesome.css" rel="stylesheet">
+        <link href="/resources/fontawesome/css/brands.css" rel="stylesheet">
+        <link href="/resources/fontawesome/css/solid.css" rel="stylesheet">
     </head>
     <body style="background: #48435C">
-        <div class="w-3/5 mx-auto text-white">
-            <h1 class="uppercase text-[60px] mx-auto w-fit">Breeze</h1>
-            <div th:if="${is_notion_configured}" class="grid grid-rows-2 grid-cols-1">
-                <h2 class="w-fit mb-5">Notion is configured</h2>
-                <button class="p-2 w-fit mx-auto" style="background: #9792e3" onclick="generateList()">Generate Grocery List</button>
-                <script th:inline="javascript">
-                function generateList() {
-                    var host = /*[[${app_base_host}]]*/;
-                    fetch(`${host}/grocery-list`, {
-                        method: "POST"
-                    }).then((res) => {
-                        if(!res.ok) {
-                            return Promise.reject(new Error("Response was not success"));
+        <div class="w-full sm:w-9/12  sm:mx-auto lg:w-4/12">
+            <div class="grid space-y-4 mx-auto w-full p-10">
+                <h1 class="text-7xl uppercase">Breeze</h1>
+                <div th:if="${is_notion_configured}" class="grid space-y-4 grid-rows-2 grid-cols-1">
+                    <div class="rounded bg-white/10 h-fit p-2">
+                        <p class="fa-regular fa-circle-check app-text-green"></p>
+                        <h2 class="w-fit mb-5 inline">Notion is configured</h2>
+                    </div>
+                    <button class="p-2 button uppercase mx-0 purple-button" onclick="generateList()">Generate Grocery List</button>
+                    <script th:inline="javascript">
+                        function generateList() {
+                            var host = /*[[${app_base_host}]]*/;
+                            fetch(`${host}/grocery-list`, {
+                                method: "POST"
+                            }).then((res) => {
+                                if(!res.ok) {
+                                    return Promise.reject(new Error("Response was not success"));
+                                }
+                                console.log("Generated grocery list");
+                            }).catch((err) => {
+                                console.error("Could not generate grocery list");
+                            })
                         }
-                        console.log("Generated grocery list");
-                    }).catch((err) => {
-                        console.error("Could not generate grocery list");
-                    })
-                }
-            </script>
+                    </script>
+                </div>
+                <div th:unless="${is_notion_configured}" class="grid space-y-4 grid-rows-2 grid-cols-1">
+                    <div class="rounded bg-white/10 h-fit p-2">
+                        <p class="fa-regular fa-circle-xmark text-red-400"></p>
+                        <h2 class="w-fit mb-5 inline">You have to connect Breeze to your Notion account.</h2>
+                    </div>
+                    <a class="button uppercase purple-button" th:href="@{{notion_uri}/oauth/authorize?client_id=e31754de-dcd8-4af4-a999-40fa11435ddf&response_type=code&owner=user(notion_uri=${notion_uri})}">Connect to Notion</a>
+                </div>
             </div>
-            <span th:unless="${is_notion_configured}">
-                <a th:href="@{{notion_uri}/oauth/authorize?client_id=e31754de-dcd8-4af4-a999-40fa11435ddf&response_type=code&owner=user(notion_uri=${notion_uri})}">Connect to Notion</a>
-            </span>
         </div>
     </body>
 </html>

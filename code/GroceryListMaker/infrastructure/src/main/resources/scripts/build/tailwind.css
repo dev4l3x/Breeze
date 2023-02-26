@@ -1,3 +1,61 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --app-green: #61E786;
+    --app-purple: #9792e3;
+}
+
+@layer base {
+    body {
+        background: #48435C;
+        @apply text-white
+    }
+    input {
+        font-size: small;
+        width: 100%;
+    }
+    a, input[type=submit]:hover {
+        cursor: pointer;
+    }
+}
+
+@layer components {
+    .input {
+        background: #48435C;
+        padding: 0.5rem;
+        font-size: small;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    .input:focus {
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        outline: none;
+    }
+
+    .button {
+        font-size: small;
+        padding: 0.5rem;
+        @apply p-2 rounded mx-auto
+    }
+
+    .purple-button {
+        background: var(--app-purple);
+        text-align: center;
+        @apply h-fit w-full;
+    }
+}
+
+@layer utilities {
+    .app-text-green {
+        color: var(--app-green);
+    }
+}
+
+.signin{
+    background: #61E786;
+}
+.signup{
+    background: #9792e3;
+    @apply w-full block text-center;
+}

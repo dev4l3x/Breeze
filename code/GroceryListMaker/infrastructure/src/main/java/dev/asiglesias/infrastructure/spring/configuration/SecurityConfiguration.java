@@ -21,11 +21,10 @@ public class SecurityConfiguration {
                 .cors().disable()
                 .csrf().disable();
         httpSecurity.authorizeRequests()
-                .antMatchers("/**/signup", "/**/signin", "/policy.html", "/terms.html").permitAll()
+                .antMatchers("/**/signup", "/**/signin", "/resources/**/*").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(new JwtTokenAuthenticationFilter(tokenService), BasicAuthenticationFilter.class)
-                .httpBasic();
+                .addFilterBefore(new JwtTokenAuthenticationFilter(tokenService), BasicAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
