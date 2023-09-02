@@ -5,15 +5,15 @@ RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
 RUN apt-get update
 RUN apt-get install nodejs
 
-ADD pom.xml /home
-ADD domain/pom.xml /home/domain/pom.xml
-ADD infrastructure/pom.xml /home/infrastructure/pom.xml
-ADD application/pom.xml /home/application/pom.xml
+ADD /code/GroceryListMaker/pom.xml /home
+ADD /code/GroceryListMaker/domain/pom.xml /home/domain/pom.xml
+ADD /code/GroceryListMaker/infrastructure/pom.xml /home/infrastructure/pom.xml
+ADD /code/GroceryListMaker/application/pom.xml /home/application/pom.xml
 RUN mvn verify --fail-never
 
-ADD domain /home/domain
-ADD application /home/application
-ADD infrastructure /home/infrastructure
+ADD /code/GroceryListMaker/domain /home/domain
+ADD /code/GroceryListMaker/application /home/application
+ADD /code/GroceryListMaker/infrastructure /home/infrastructure
 RUN npm install /home/infrastructure/src/main/resources/scripts/build
 
 RUN mvn package -DskipTests=true
